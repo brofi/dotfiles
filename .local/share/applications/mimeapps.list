@@ -1,0 +1,11 @@
+[Default Applications]
+application/zip=7zFM.desktop
+x-scheme-handler/http=google-chrome.desktop
+x-scheme-handler/https=google-chrome.desktop
+text/html=google-chrome.desktop
+text/plain=vim.desktop
+application/pdf=evince.desktop
+inode/directory=Thunar.desktop
+
+[Added Associations]
+application/zip=thunar-settings.desktop;7zFM.desktop;

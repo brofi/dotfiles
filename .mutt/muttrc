@@ -1,0 +1,44 @@
+#set folder      = imaps://imap.schnugge.de/
+set folder      = imaps://imap.mailbox.org/
+#set imap_user   = web257p1
+set imap_user   = andy@mailbox.org
+# set imap_pass   = your-imap-password
+set spoolfile   = +INBOX
+#mailboxes       = +INBOX
+set imap_check_subscribed
+
+set editor      = "vim"
+
+# Store message headers locally to speed things up.
+# If hcache is a folder, Mutt will create sub cache folders for each account which may speeds things even more up.
+set header_cache = ~/.cache/mutt
+
+# Store messages locally to speed things up, like searching message bodies.
+# Can be the same folder as header_cache.
+# This will cost important disk usage according to your e-mail amount.
+set message_cachedir = "~/.cache/mutt"
+
+# Specify where to save and/or look for postponed messages.
+set postponed="=Drafts"
+set record="=Sent" 
+
+# Allow Mutt to open new imap connection automatically.
+unset imap_passive
+
+# Keep IMAP connection alive by polling intermittently (time in seconds).
+set imap_keepalive = 300
+
+# How often to check for new mail (time in seconds).
+set mail_check = 120
+
+#If set (the default), mutt will not automatically accept a server certificate whose host name
+# does not match the host used in your folder URL. You should only unset this for particular known hosts,
+# using the function.
+unset ssl_verify_host
+
+# show tildes like in vim
+set tilde
+# no ugly plus signs
+unset markers
+
+source ~/.mutt/colors

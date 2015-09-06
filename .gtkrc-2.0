@@ -1,0 +1,6 @@
+gtk-icon-theme-name = "AwOkenWhite"
+#gtk-theme-name = "MediterraneanDarkest"
+gtk-theme-name = "FlatStudioDark"
+gtk-font-name = "Ubuntu-Light 10"
+#gtk-font-name = "Inconsolata"
+#gtk-font-name = "Arial"
