@@ -1,0 +1,41 @@
+#!/bin/bash
+# Title: renext
+# Description: renames file name extensions
+# Usage: renext EXT_NEW EXT_OLD [TARGET_DIR] 
+
+# Old filename extension
+EXT_OLD=
+# New filename extension
+EXT_NEW=
+# Target directory (optional)
+TARGET_DIR=.
+
+if [[ $# > 1 ]]; then
+    EXT_OLD="$1"
+    EXT_NEW="$2"
+else
+    echo "Too few arguments."
+    echo "Usage: $0 EXT_NEW EXT_OLD [TARGET_DIR]"
+    exit 1
+fi
+
+if [[ $# > 2 ]]; then
+    TARGET_DIR="$3"
+fi
+
+# DEBUG
+# echo $TARGET_DIR/*.$EXT_OLD $EXT_NEW
+
+# scary: what if rename ./aha.png to ./aha.jpg
+# ${f%%.*} would be empty
+# but longest matching ${f%.*} on f.tar.gz would be f.tar, not f
+# not if user specified tar.gz
+
+# or filename contains a dot, like: aha.bak.png
+
+# TODO strip any preceding dot in ext_old and ext_new
+# TODO check if that file not already exists, it could get overwritten
+
+# for f in $TARGET_DIR/*.$EXT_OLD; do
+    # mv $f "${f%%.*}".$EXT_NEW
+# done

@@ -1,0 +1,10 @@
+#!/bin/bash
+# updates android sdk permissions after updating
+
+egrep -i "^sdkusers" /etc/group
+if [ $? -ne 0 ]; then
+    echo "Create group sdkusers"
+    exit 1
+fi
+sudo chown -R :sdkusers /opt/android-sdk/
+sudo chmod -R g+w /opt/android-sdk/

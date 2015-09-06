@@ -1,0 +1,3 @@
+#!/bin/sh
+# adb shell top -m 5 -d 1 -n 1
+adb shell top -d 1

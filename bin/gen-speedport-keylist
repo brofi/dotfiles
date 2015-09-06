@@ -1,0 +1,22 @@
+#!/bin/zsh
+PRE="SP-"
+echo "Please enter the AP information:"
+echo -n "SSID: "
+read SSID
+echo -n "MAC: "
+read MAC
+echo "Where to you want to save the output?"
+echo -n "FILENAME: "
+read FILENAME
+D=$MAC[14]
+E=$MAC[16]
+F=$MAC[17]
+G=$SSID[10]
+H=$SSID[11]
+for X in {0..9}; do
+    for Y in {0..9}; do
+        for Z in {0..9}; do
+            echo $PRE$G$Z$H$D$E$F$X$Y$Z >>$FILENAME
+        done
+    done
+done

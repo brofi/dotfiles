@@ -1,0 +1,54 @@
+#!/bin/bash
+
+TITLE="netuse"
+ICON="/usr/share/icons/and1-custom/network-server.svg"
+
+echo
+
+MNTROOT="/mnt/ntserver/"
+MNTSUB=(c d x y)
+
+SERVER="//and1-server/"
+SHARES=(C$ D$ X$ Y$)
+
+#assert ${#SHARES[@]} -eq ${#MNTSUB[@]}
+
+MAXINDEX=$((${#SHARES[@]} - 1))
+
+echo "Choose one of the following:"
+echo
+for ((i=0; i<=$MAXINDEX; i++)); do
+	echo "$i: mount $SHAREPATH${SHARES[$i]}"
+done
+echo "q: quit program"
+echo
+
+while true
+do
+	read -p "$ " CHOICE
+	case $CHOICE in
+		[0-$MAXINDEX])
+			SHAREPATH=$SERVER${SHARES[$CHOICE]}
+			MNTPATH=$MNTROOT${MNTSUB[$CHOICE]}
+
+			MNTPOINT=$(mountpoint -q $MNTPATH)$?
+
+			if [ $MNTPOINT -ne 0 ]
+			then
+				read -s -p "[remote] password for administrator: " PASSWD
+				echo
+				sudo mount -t cifs $SHAREPATH $MNTPATH -o username=administrator,password=$PASSWD 2>/dev/null
+				if [ $? -eq 0 ]
+				then
+					notify-send -u low -i $ICON $TITLE "$SHAREPATH successfully mounted."
+				else
+					echo "Error: Couldn't mount $SHAREPATH. Probably wrong password."
+				fi
+			else
+				echo "$MNTPATH is already a mountpoint."
+			fi;;
+		"q") exit 0;;
+		"") ;;
+		*) echo "Error: Selection '$CHOICE' does not exist.";;
+	esac
+done

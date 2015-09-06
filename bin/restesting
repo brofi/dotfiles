@@ -1,0 +1,10 @@
+#!/bin/bash
+# base_url='http://localhost:8080/ebet-web/webapi'
+base_url='http://jsonplaceholder.typicode.com'
+while true; do
+    # e.g. posts/1
+    echo -n 'Enter resource: '
+    read resource
+    response=$(curl -H 'Accept: application/json' ${base_url}/${resource})
+    echo $response | python -mjson.tool
+done
