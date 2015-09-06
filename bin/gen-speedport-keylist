@@ -5,7 +5,7 @@ echo -n "SSID: "
 read SSID
 echo -n "MAC: "
 read MAC
-echo "Where to you want to save the output?"
+echo "Where do you want to save the output?"
 echo -n "FILENAME: "
 read FILENAME
 D=$MAC[14]
