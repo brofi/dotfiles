@@ -98,29 +98,12 @@ if ! shopt -oq posix; then
 fi
 
 # and1
-export TERM="xterm-256color"
-export PATH=$PATH:~/bin:/opt/android-sdk/tools:/opt/android-sdk/platform-tools
-export EDITOR="vim"
-export BROWSER="google-chrome-stable"
+for file in ~/.{bash_exports, bash_functions}; do
+    if [ -f "$file" ]; then
+        . "$file"
+    fi
+done
+unset file
+
 archey3
 bind -x '"\C-l": clear; archey3'
-
-man() {
-    env LESS_TERMCAP_mb=$'\E[01;31m' \
-    LESS_TERMCAP_md=$'\E[01;38;5;74m' \
-    LESS_TERMCAP_me=$'\E[0m' \
-    LESS_TERMCAP_se=$'\E[0m' \
-    LESS_TERMCAP_so=$'\E[38;5;246m' \
-    LESS_TERMCAP_ue=$'\E[0m' \
-    LESS_TERMCAP_us=$'\E[04;38;5;146m' \
-    man "$@"
-}
-
-export NVM_DIR="/home/and1/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
-
-# use system anti-aliased fonts for java
-export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true'
-
-# warn the java vm that xmonad is non-reparenting
-export _JAVA_AWT_WM_NONREPARENTING=1
