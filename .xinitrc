@@ -5,10 +5,10 @@ setxkbmap -layout us -variant altgr-intl
 trayer --SetDockType true --edge top --align left --widthtype request --height 19 --margin 970 --distance 1 &
 # xcompmgr &
 compton -b &
-# dunst &
+dunst &
 udiskie &
 mpd ~/.mpd/mpd.conf &
-dropboxd &
+dropbox &
 skype &
 pidgin &
 # urxvt -e weechat &
