@@ -19,7 +19,7 @@ echo 'Setting up symlinks...'
 # Ingore files in .git directory
 dotfiles=$(find -type f \( ! -name ${0#*/} ! -name README.md \) -not -path './.git/*')
 for f in $dotfiles; do
-    target=$dir/${f#*/}
+    target=$this_dir/${f#*/}
     name=$HOME/${f#*/}
     # Save existing files
     if [ -f $name ]; then
