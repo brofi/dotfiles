@@ -5,14 +5,16 @@ shopt -s nullglob
 
 echo 'Ensuring directory structure...'
 # Dirs without children (only links to parent and itself)
-directories=$(find -type d -links 2)
+# Ingore .git directory
+directories=$(find -type d -links 2 -not -path './.git/*')
 for d in $directories; do
     mkdir -p $HOME/${d#*/}
 done
 
 echo 'Setting up symlinks...'
 # Get file names, ignore this file and README.md
-dotfiles=$(find -type f \( ! -name ${0#*/} ! -name README.md \))
+# Ingore files in .git directory
+dotfiles=$(find -type f \( ! -name ${0#*/} ! -name README.md \) -not -path './.git/*')
 for f in $dotfiles; do
     target=$PWD/${f#*/}
     name=$HOME/${f#*/}
