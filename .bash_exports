@@ -6,8 +6,11 @@ export BROWSER="google-chrome-stable"
 export NVM_DIR="/home/and1/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 
-# use system anti-aliased fonts for java
+# Use system anti-aliased fonts for java
 export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true'
 
-# warn the java vm that xmonad is non-reparenting
+# Warn the Java VM that xmonad is non-reparenting
 export _JAVA_AWT_WM_NONREPARENTING=1
+
+# Force GTK style (Qt5)
+export QT_STYLE_OVERRIDE=GTK+
