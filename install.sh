@@ -17,7 +17,7 @@ done
 echo 'Setting up symlinks...'
 # Get file names, ignore this file and README.md
 # Ingore files in .git directory
-dotfiles=$(find $this_dir -type f \( ! -name ${0#*/} ! -name README.md \) -not -path "$this_dir/.git/*")
+dotfiles=$(find $this_dir -type f \( ! -name ${0#$this_dir/} ! -name README.md \) -not -path "$this_dir/.git/*")
 for f in $dotfiles; do
     name=$HOME/${f#$this_dir/}
     # Save existing files
