@@ -98,7 +98,7 @@ if ! shopt -oq posix; then
 fi
 
 # and1
-for file in ~/.{bash_exports, bash_functions}; do
+for file in ~/.bash_{exports,functions}; do
     if [ -f "$file" ]; then
         . "$file"
     fi
