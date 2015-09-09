@@ -10,7 +10,7 @@ Config { font = "xft:Inconsolata:size=12:antialias=true"
                     , Run Memory ["-t","Mem: <usedratio>%"] 5
                     , Run Date "%a %b %_d %l:%M" "date" 10
                     , Run Uptime ["-t","Up: <hours>h <minutes>m"] 10
-                    , Run Com "/home/and1/bin/volume.sh" [] "volume" 1
+                    , Run Com "bin/volume.sh" [] "volume" 1
                     , Run StdinReader
                     ]
        , sepChar = "%"
