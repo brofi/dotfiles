@@ -75,7 +75,7 @@ myManageHook = composeAll
 
 myKeys = [ ((0, xK_Print), spawn "scrot")
         , ((mod4Mask, xK_Print), spawn "scrot -s")
-        , ((mod4Mask, xK_p), spawn "dmenu_run -b -nb '#383838' -nf '#ccff00' -sf '#383838' -sb '#ccff00' -p 'launch' -fn 'Inconsolata-11'")
+        , ((mod4Mask, xK_p), spawn "dmenu_run -b -nb '#2f343b' -nf '#d3dae3' -sf '#ccff00' -sb '#2f343b' -p '>' -fn 'Inconsolata-11'")
         , ((0, xF86XK_MyComputer), spawn "urxvt -e mc")
         , ((0, xF86XK_Explorer), spawn "urxvt -e mc")
         , ((0, xF86XK_HomePage), spawn "google-chrome-stable")
@@ -116,9 +116,9 @@ myConf = ewmh defaultConfig
                 -- , logHook = myLogHook xmproc
                 , startupHook = myStartupHook
                 , workspaces = myWorkspaces
-                , borderWidth = 1
-                , focusedBorderColor = "#ffffff" --"#68e862"
-                , normalBorderColor = "#ffffff" --"#729fcf"
+                , borderWidth = 2
+                , focusedBorderColor = "#2d3036"
+                , normalBorderColor = "#2d3036"
                 -- , modMask = mod1Mask 
                 , modMask = mod4Mask -- Use Super instead of Alt
                 , handleEventHook = FS.fullscreenEventHook -- chrome fullscreen fix

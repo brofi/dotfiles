@@ -59,7 +59,7 @@
     # right side of the screen.  Y is measured from the top and down respectevly.
     # The width can be negative. In this case the actual width is the
     # screen width minus the width defined in within the geometry option.
-    geometry = "300x5-30+20"
+    geometry = "300x5-4+20"
 
     # The transparency of the window. range: [0; 100]
     # This option will only work if a compositing windowmanager is present (e.g. xcompmgr, compiz, etc..)
@@ -124,8 +124,8 @@
     browser = /usr/bin/firefox -new-tab
 
 [frame]
-    width = 3
-    color = "#aaaaaa"
+    width = 2
+    color = "#2d3036"
 
 [shortcuts]
     # shortcuts are specified as [modifier+][modifier+]...key
@@ -149,17 +149,17 @@
 [urgency_low]
     # IMPORTANT: colors have to be defined in quotation marks.
     # Otherwise the '#' and following  would be interpreted as a comment.
-    background = "#383838"
-    foreground = "#ffffff"
+    background = "#2f343b"
+    foreground = "#d3dae3"
     timeout = 10
 
 [urgency_normal]
-    background = "#383838"
+    background = "#2f343b"
     foreground = "#ccff00"
     timeout = 10
 
 [urgency_critical]
-    background = "#383838"
+    background = "#2f343b"
     foreground = "#900000"
     timeout = 0
 

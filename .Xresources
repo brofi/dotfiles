@@ -1,5 +1,5 @@
 Xcursor.theme: FlatbedCursors.White.Small
-#include ".colors/gjm"
+#include ".colors/arc"
 
 !*background:              [80]#000000
 !*foreground:              #ffffff

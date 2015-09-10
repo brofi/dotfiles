@@ -1,8 +1,8 @@
 Config { font = "xft:Inconsolata:size=12:antialias=true" 
-       , bgColor = "#383838"
-       , fgColor = "white"
+       , bgColor = "#2f343b"
+       , fgColor = "#d3dae3"
        , border = NoBorder
-       , borderColor = "#2a2a2a"
+       , borderColor = "#2d3036"
        , position = Top
        , commands = [ Run Weather "EDSB" ["-t","<station>: <tempC>C","-L","18","-H","25","--normal","#ccff00","--high","#ff00a0","--low","#48c6ff"] 36000
                     , Run Network "enp5s0" ["-S","True","-t","<dev>: <rx>","-L","0","-H","70","--normal","#ccff00","--high","#ff00a0"] 1
