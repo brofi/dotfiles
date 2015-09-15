@@ -1,33 +1,36 @@
 #!/bin/bash
 
-# Empty array if no match
-shopt -s nullglob
+# This file's name
+__self="$(basename "${BASH_SOURCE[0]}")"
+# Full path of this file's directory
+__dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-# full directory name of this script, no matter from where it's being called
-this_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+IFS=$'\n'
+# Get dirs without children (only links to parent and itself)
+# Prune content of .git directory and exclude .git itself
+# Otherwise it will be found if it has no subdirectories
+leaf_dirs=($(find $__dir -not \( -path "$__dir/.git" -prune \) -type d -links 2))
+
+# Get file names. Ignore this file, README.md and files in .git directory
+dotfiles=($(find $__dir -type f ! -name $__self ! -name README.md -not -path "$__dir/.git/*"))
+unset IFS
 
 echo 'Ensuring directory structure...'
-# Dirs without children (only links to parent and itself)
-# Ingore .git directory
-directories=$(find $this_dir -type d -links 2 -not -path "$this_dir/.git/*")
-for d in $directories; do
-    mkdir -p $HOME/${d#$this_dir/}
+for d in "${leaf_dirs[@]}"; do
+    mkdir -p $HOME/${d#$__dir/}
 done
 
 echo 'Setting up symlinks...'
-# Get file names, ignore this file and README.md
-# Ingore files in .git directory
-dotfiles=$(find $this_dir -type f \( ! -name ${0#$this_dir/} ! -name README.md \) -not -path "$this_dir/.git/*")
-for f in $dotfiles; do
-    name=$HOME/${f#$this_dir/}
+for f in "${dotfiles[@]}"; do
+    name=$HOME/${f#$__dir/}
     # Save existing files
-    if [ -f $name ]; then
+    if [ -f "$name" ]; then
         bak=${name}.dotsave
-        while [ -f $bak ]; do
+        while [ -f "$bak" ]; do
             bak=${bak}.dotsave
         done
-        mv $name $bak
-        echo "warning: $name saved as $bak"
+        mv "$name" "$bak"
+        echo "warning: '$name' saved as '$bak'"
     fi
-    ln -sv $f $name
+    ln -sv "$f" "$name"
 done
