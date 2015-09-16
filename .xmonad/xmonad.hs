@@ -58,8 +58,8 @@ myChatLayout = noBorders $ withIM ratio matchSteam $  withIM ratio matchSkype $ 
     where
         ratio = 1%5
         matchSteam = And (ClassName "Steam")(Title "Friends")
-        matchSkype = And (ClassName "Skype")(Or (Title "schnugge. - Skype™")(Title "Skype™ 4.2 for Linux"))
-        matchPidgin = And (ClassName "Pidgin")(Role "buddy_list")
+        matchSkype = And (ClassName "Skype")(Or (Title "schnugge. - Skype™")(Title "Skype™ 4.3 for Linux"))
+        matchPidgin = And (ClassName "Pidgin")(Or (Role "buddy_list")(Role "accounts"))
 
 myLayout = avoidStruts $ toggleLayouts (myFull) $ mkToggle (single REFLECTX) $ mkToggle (single REFLECTY) $ onWorkspaces ["1", "2"] myMainLayout $ onWorkspace "5" myChatLayout $ myMainLayout
 
