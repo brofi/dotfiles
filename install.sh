@@ -71,7 +71,7 @@ for f in "${dotfiles[@]}"; do
         echo "warning: '$name' saved as '$bak'"
     fi
     ln -sv "$f" "$name"
-    # Fix permissions
-    [ -z "$owner" ] || chown $owner "$name"
-    [ -z "$group" ] || chgrp $group "$name"
+    # Fix permission on link (don't dereference)
+    [ -z "$owner" ] || chown -h $owner "$name"
+    [ -z "$group" ] || chgrp -h $group "$name"
 done
