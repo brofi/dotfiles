@@ -8,12 +8,33 @@ __dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # By default links are installed in user's home directory
 install_dir=$HOME
 
+# $1 exit code
+# $2 error msg
+function errexit {
+    echo "Error: $2" 1>&2
+    exit $1
+}
+
 # Parse key value pairs
-while [[ $# > 1 ]]; do
+while [ $# -gt 1 ]; do
     key="$1"
     case $key in
-        -C)
-            install_dir="$2"
+        -C|--directory)
+            install_dir="${2%/}"
+            [ -d "$install_dir" ] \
+                || errexit $? "'$install_dir' is not a directory!"
+            shift
+            ;;
+        --owner)
+            owner="$2"
+            getent passwd $owner > /dev/null \
+                || errexit $? "user '$owner' does not exist!"
+            shift
+            ;;
+        --group)
+            group="$2"
+            getent group $group > /dev/null \
+                || errexit $? "group '$group' does not exist!"
             shift
             ;;
         *)
@@ -50,4 +71,7 @@ for f in "${dotfiles[@]}"; do
         echo "warning: '$name' saved as '$bak'"
     fi
     ln -sv "$f" "$name"
+    # Fix permissions
+    [ -z "$owner" ] || chown $owner "$name"
+    [ -z "$group" ] || chgrp $group "$name"
 done
