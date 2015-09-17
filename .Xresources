@@ -1,4 +1,4 @@
-Xcursor.theme: FlatbedCursors.White.Small
+Xcursor.theme: Simple-and-Soft
 #include ".colors/arc"
 
 !*background:              [80]#000000
