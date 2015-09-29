@@ -105,5 +105,3 @@ for file in ~/.bash_{exports,functions}; do
 done
 unset file
 
-archey3
-bind -x '"\C-l": clear; archey3'
