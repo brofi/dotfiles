@@ -1,4 +1,4 @@
-Config { font = "xft:Inconsolata:size=12:antialias=true" 
+Config { font = "xft:Inconsolata:size=11:antialias=true" 
        , bgColor = "#2f343b"
        , fgColor = "#d3dae3"
        , border = NoBorder
