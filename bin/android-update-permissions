@@ -1,10 +1,37 @@
 #!/bin/bash
-# updates android sdk permissions after updating
+# updates android sdk permission after updating
 
-egrep -i "^sdkusers" /etc/group
-if [ $? -ne 0 ]; then
-    echo "Create group sdkusers"
+grp=sdkusers
+loc=/opt/android-sdk
+
+function is_root {
+    [ $EUID -eq 0 ]
+}
+
+function is_sudoer {
+    id -nG $EUID | grep -Eqw 'sudo|wheel'
+}
+
+function error {
+    echo "$1" 1>&2
+}
+
+if ! getent group $grp > /dev/null; then
+    error "Group '$grp' not found"
     exit 1
 fi
-sudo chown -R :sdkusers /opt/android-sdk/
-sudo chmod -R g+w /opt/android-sdk/
+
+if ! [ -d "$loc" ]; then
+    error "'$loc' is not a directory"
+    exit 1
+fi
+
+if ! is_root && ! is_sudoer; then
+    error "Script must be run with root permission"
+    exit 1
+fi
+
+sudo echo "Setting permission for $grp on ${loc}..."
+sudo chown -R :$grp $loc
+sudo chmod -R g+w $loc
+echo "...done"
