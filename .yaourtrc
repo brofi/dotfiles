@@ -1,0 +1,2 @@
+# Don't compress (override default PKGEXT='.pkg.tar.xz')
+PKGEXT='.pkg.tar'
