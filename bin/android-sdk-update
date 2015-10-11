@@ -1,0 +1,10 @@
+#!/bin/bash
+# update android sdk packages
+
+pkg_sdk=(android-sdk android-sdk-platform-tools android-sdk-build-tools)
+pkg_platform=(android-platform android-google-apis android-google-apis-x86)
+pkg_support=(android-support android-support-repository)
+pkg_else=(android-google-play-services android-google-repository android-sources android-docs)
+
+yaourt -S --noconfirm --needed --force ${pkg_sdk[@]} ${pkg_platform[@]} ${pkg_support[@]} ${pkg_else[@]}
+android-sdk-update-permission
