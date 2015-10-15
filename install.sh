@@ -55,7 +55,10 @@ unset IFS
 
 echo 'Ensuring directory structure...'
 for d in "${leaf_dirs[@]}"; do
-    mkdir -p $install_dir/${d#$__dir/}
+    name=$install_dir/${d#$__dir/}
+    mkdir -p "$name"
+    [ -z "$owner" ] || chown $owner "$name"
+    [ -z "$group" ] || chgrp $group "$name"
 done
 
 echo 'Setting up symlinks...'
