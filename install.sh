@@ -49,8 +49,8 @@ IFS=$'\n'
 # Otherwise it will be found if it has no subdirectories
 leaf_dirs=($(find $__dir -not \( -path "$__dir/.git" -prune \) -type d -links 2))
 
-# Get file names. Ignore this file, README.md and files in .git directory
-dotfiles=($(find $__dir -type f ! -name $__self ! -name README.md -not -path "$__dir/.git/*"))
+# Get file names. Ignore this file, README.md, TODO and files in .git directory
+dotfiles=($(find $__dir -type f ! -name $__self ! -name README.md ! -name TODO -not -path "$__dir/.git/*"))
 unset IFS
 
 echo 'Ensuring directory structure...'
