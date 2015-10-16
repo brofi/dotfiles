@@ -5,6 +5,9 @@ __self="$(basename "${BASH_SOURCE[0]}")"
 # Full path of this file's directory
 __dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
+# File name extension for backed up files
+ext_bak=dotsave
+
 # By default links are installed in user's home directory
 install_dir=$HOME
 
@@ -15,8 +18,18 @@ function errexit {
     exit $1
 }
 
+function cleanup {
+    IFS=$'\n'
+    dotsave_files=($(find $install_dir -xdev -name "*.$ext_bak"))
+    unset IFS
+    for f in "${dotsave_files[@]}"; do
+        rm "$f"
+        echo "Deleted $f"
+    done
+}
+
 # Parse key value pairs
-while [ $# -gt 1 ]; do
+while [ $# -gt 0 ]; do
     key="$1"
     case $key in
         -C|--directory)
@@ -37,11 +50,17 @@ while [ $# -gt 1 ]; do
                 || errexit $? "group '$group' does not exist!"
             shift
             ;;
+        -c|--clean)
+            do_clean=true
+            ;;
         *)
             # unknown
     esac
     shift
 done
+
+# If clear switch set, remove backed up files
+[ "$do_clean" = true ] && cleanup && exit 0
 
 IFS=$'\n'
 # Get dirs without children (only links to parent and itself)
@@ -66,9 +85,9 @@ for f in "${dotfiles[@]}"; do
     name=$install_dir/${f#$__dir/}
     # Save existing files
     if [ -f "$name" ]; then
-        bak=${name}.dotsave
+        bak=${name}.${ext_bak}
         while [ -f "$bak" ]; do
-            bak=${bak}.dotsave
+            bak=${bak}.${ext_bak}
         done
         mv "$name" "$bak"
         echo "warning: '$name' saved as '$bak'"

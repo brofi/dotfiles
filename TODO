@@ -1,3 +1,3 @@
 usage
 profile arg for different configs
-remove .dotsaves arg
+-q|--quiet arg
