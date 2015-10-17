@@ -1,0 +1,2 @@
+# use --scale-down rather than --gemoetry workaround once flickering is fixed
+feh -g 1920x1080
