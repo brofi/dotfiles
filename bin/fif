@@ -35,7 +35,7 @@ files=($(printf '%s\n' ${res[@]} | cut -f1 -d':' | uniq))
 
 for i in "${!files[@]}"; do
     printf '\n\e[35m%s\e[m\n' "${files[$i]}"
-    section=($(printf '%s\n' ${res[@]} | grep -w "${files[$i]}"))
+    section=($(printf '%s\n' ${res[@]} | grep "^${files[$i]}:"))
     lines=($(printf '%s\n' ${section[@]} | cut -f2 -d':'))
     matches=($(printf '%s\n' ${section[@]} | cut -f3 -d':'))
     for j in "${!section[@]}"; do
