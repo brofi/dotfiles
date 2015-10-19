@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# runtime
+#
+# gets runtime of given command and
+# calculates the average over given repetitions
+
+_self="$(basename "${BASH_SOURCE[0]}")"
+
+function die {
+    echo $1 >&2
+    exit 1
+}
+
+function measure {
+    local start=$(date +%s%3N)
+    $cmd ${args[@]} > /dev/null 2>&1
+    echo -n $(($(date +%s%3N) - $start))
+}
+
+[ $# -lt 2 ] && die "Usage: $_self REPETITIONS COMMAND [ARGUMENTS]"
+
+rep=$1; shift
+[[ $rep =~ ^[0-9]+$ ]] || die "'$rep': not a number"
+
+cmd=$1; shift
+if ! command -v $cmd > /dev/null; then
+    [ -x $cmd ] || die "$cmd: command not found or not executable"
+    [ "$(basename $cmd)" = "$cmd" ] && cmd=./$cmd
+fi
+
+args=("${@}")
+
+# test run
+$cmd ${args[@]} > /dev/null || die "'$cmd' failed to run"
+
+echo "running '$cmd ${args[@]}'..."
+
+sum=0
+declare -a values
+for i in `seq 1 $rep`; do
+    val=`measure`
+    values[$i]=$val
+    echo "run $i: $val"
+    let sum+=val
+done
+
+echo
+echo "average: $((sum / ${#values[@]})) ms"
