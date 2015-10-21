@@ -28,20 +28,25 @@ if [ "$no_format" = true ]; then
     exit 0
 fi
 
+color_pattern=$(printf "\033[1;31m$pattern\033[0m")
+
 IFS=$'\n'
 
 res=($(grep -IRns --exclude-dir=$exclude_dir $pattern))
 files=($(printf '%s\n' ${res[@]} | cut -f1 -d':' | uniq))
 
 for i in "${!files[@]}"; do
-    printf '\n\e[35m%s\e[m\n' "${files[$i]}"
+    print="$print\n\e[35m${files[$i]}\e[0m\n"
     section=($(printf '%s\n' ${res[@]} | grep "^${files[$i]}:"))
     lines=($(printf '%s\n' ${section[@]} | cut -f2 -d':'))
     matches=($(printf '%s\n' ${section[@]} | cut -f3- -d':'))
     for j in "${!section[@]}"; do
-        printf '\e[32m%s\e[0m\e[1;34m:\e[0m%s\n' "${lines[$j]}" "$(echo ${matches[$j]} | sed 's/^[ \t]*//' | sed "/$pattern/s//`printf "\033[1;31m$pattern\033[0m/g"`")"
+        format_match="$(echo ${matches[$j]} | sed -e 's/^[ \t]*//' -e "s/$pattern/$color_pattern/g")"
+        print="$print\e[32m${lines[$j]}\e[0m\e[1;34m:\e[0m${format_match}\n"
     done
 done
+
+printf $print
 
 unset IFS
 
