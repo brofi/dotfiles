@@ -76,8 +76,16 @@ echo 'Ensuring directory structure...'
 for d in "${leaf_dirs[@]}"; do
     name=$install_dir/${d#$__dir/}
     mkdir -p "$name"
-    [ -z "$owner" ] || chown $owner "$name"
-    [ -z "$group" ] || chgrp $group "$name"
+    # set permission on directories
+    if [ -n "$owner" ] || [ -n "$group" ]; then
+        # 'owner:' sets owner and login group, so:
+        owned=$owner; [ -z "$group" ] || owned+=:$group
+        while true; do
+            chown $owned "$name"
+            name=$(dirname "$name")
+            [ "$name" != "$install_dir" ] || break
+        done
+    fi
 done
 
 echo 'Setting up symlinks...'
