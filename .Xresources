@@ -16,6 +16,11 @@ URxvt.resize-font.bigger: C-equal
 URxvt.resize-font.reset: C-0
 URxvt.resize-font.show: C-question
 
+! matcher
+URxvt.url-launcher: /usr/bin/xdg-open
+URxvt.matcher.button: 1
+URxvt.matcher.rend.0: Bold fg8
+
 !*background:              [80]#000000
 !*foreground:              #ffffff
 
@@ -264,7 +269,7 @@ URxvt*cursorBlink: true
 ! URxvt*perl-ext-common: string
 
 ! Comma-separated list(s) of perl extension scripts (default: "default") to use in this terminal instance; option -pe.
-URxvt*perl-ext: tabbedex,resize-font
+URxvt*perl-ext: tabbedex,resize-font,matcher
 
 ! Perl code to be evaluated when all extensions have been registered. See the urxvtperl(3) manpage.
 ! URxvt*perl-eval: string
