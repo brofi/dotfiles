@@ -10,6 +10,12 @@ URxvt.tabbed.autohide: yes
 URxvt.tabbed.new-button:  no
 URxvt.tabbed.title: no
 
+! resize-font
+URxvt.resize-font.smaller: C-minus
+URxvt.resize-font.bigger: C-equal
+URxvt.resize-font.reset: C-0
+URxvt.resize-font.show: C-question
+
 !*background:              [80]#000000
 !*foreground:              #ffffff
 
@@ -258,7 +264,7 @@ URxvt*cursorBlink: true
 ! URxvt*perl-ext-common: string
 
 ! Comma-separated list(s) of perl extension scripts (default: "default") to use in this terminal instance; option -pe.
-URxvt*perl-ext: tabbedex
+URxvt*perl-ext: tabbedex,resize-font
 
 ! Perl code to be evaluated when all extensions have been registered. See the urxvtperl(3) manpage.
 ! URxvt*perl-eval: string
