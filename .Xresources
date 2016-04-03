@@ -1,6 +1,15 @@
 Xcursor.theme: Simple-and-Soft
 #include ".colors/arc"
 
+! tabbedex
+URxvt.tabbed.tabbar-fg: -2
+URxvt.tabbed.tabbar-bg: -1
+URxvt.tabbed.tab-fg: 10
+URxvt.tabbed.tab-bg: -1
+URxvt.tabbed.autohide: yes
+URxvt.tabbed.new-button:  no
+URxvt.tabbed.title: no
+
 !*background:              [80]#000000
 !*foreground:              #ffffff
 
@@ -81,7 +90,7 @@ URxvt*depth: 32
 
 ! Select the fonts to be used. This is a comma separated list of font names that are checked in order when trying to find glyphs for characters. The first font defines the cell size for
 ! URxvt*font: fontlist
-URxvt*font: xft:Inconsolata:size=11
+URxvt*font: xft:Inconsolata:size=12
 
 ! URxvt*boldFont: fontlist
 
@@ -249,7 +258,7 @@ URxvt*cursorBlink: true
 ! URxvt*perl-ext-common: string
 
 ! Comma-separated list(s) of perl extension scripts (default: "default") to use in this terminal instance; option -pe.
-! URxvt*perl-ext: string
+URxvt*perl-ext: tabbedex
 
 ! Perl code to be evaluated when all extensions have been registered. See the urxvtperl(3) manpage.
 ! URxvt*perl-eval: string
