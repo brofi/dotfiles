@@ -1,20 +1,31 @@
 #!/bin/bash
 # update android sdk packages
+# $1 android api version
+# TODO api 23 should match e.g. android-sdk-build-tools-23.0.2
+
+. array-utils.sh
+. archlinux-utils.sh
+
+version=$1
 
 pkg_sdk=(android-sdk android-sdk-platform-tools android-sdk-build-tools)
 pkg_platform=(android-platform android-google-apis android-google-apis-x86)
 pkg_support=(android-support android-support-repository)
 pkg_misc=(android-google-play-services android-google-repository android-sources android-docs)
 
+pkg=(${pkg_sdk[@]} ${pkg_platform[@]} ${pkg_support[@]} ${pkg_misc[@]})
+
+[ -n "$version" ] && array_suffix "-$version" pkg
+echo "Checking package existence..."
+array_filter archlinux_exists_in_aur pkg
+
+echo "Installing packages..."
 mkdir -p ~/tmp
 yaourt -S \
     --tmp ~/tmp \
     --noconfirm \
     --needed \
     --force \
-    ${pkg_sdk[@]} \
-    ${pkg_platform[@]} \
-    ${pkg_support[@]} \
-    ${pkg_misc[@]}
+    ${pkg[@]}
 android-sdk-update-permission
 rm -rf ~/tmp/yaourt-tmp-$USER
