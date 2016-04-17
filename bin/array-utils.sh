@@ -34,3 +34,44 @@ function array_filter {
     done 
     eval "$2"'=("${array[@]}")'
 }
+
+# Applied to a predicate P and an array A:
+# Returns the longest prefix (possibly empty) of A of elements that satisfy P.
+# $1 predicate
+# $2 array by name
+function array_take_while {
+    local predicate=$1
+    local tmp=$2[@]
+    local array=("${!tmp}")
+
+    local idx=${#array[@]}
+    for i in "${!array[@]}"; do
+        if ! $predicate "${array[$i]}"; then
+            idx=$i
+            break
+        fi
+    done
+
+    eval "$2"'=("${array[@]:0:'"$idx"'}")'
+}
+
+# True if $1 occurs in $2
+# $1 string or number
+# $2 array
+function array_elem {
+    for elem in "${@:2}"; do
+        [ "$elem" == "$1" ] && return 0
+    done
+    return 1
+}
+
+# Returns the index of the first occurrence of $1 in $2,
+# or nothing if not found.
+# $1 string or number
+# $2 array
+function array_first_index_of {
+    local array=("${@:2}")
+    for i in "${!array[@]}"; do
+        [ "${array[$i]}" == "$1" ] && echo $i
+    done
+}
