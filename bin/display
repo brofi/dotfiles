@@ -1,0 +1,28 @@
+#!/bin/bash
+
+int="eDP1"
+# TODO get connected ext display name
+ext="HDMI1"
+
+function set_bg {
+    [ -x ~/.fehbg ] && . ~/.fehbg
+}
+
+case $1 in
+  intern)
+    xrandr --output $int --auto --output $ext --off && set_bg
+    ;;
+  extern)
+    xrandr --output $int --off --output $ext --auto && set_bg
+    ;;
+  clone)
+    res=$(xrandr -q | awk '/^ *[0-9]*x[0-9]*/{ print $1 }' | sort -n | uniq -d | tail -1)
+    xrandr --output $int --mode $res --output $ext --same-as $int --mode $res && set_bg
+    ;;
+  extend)
+    xrandr --output $int --auto --output $ext --auto --right-of $int && set_bg
+    ;;
+  *)
+    echo "usage: display [intern || extern || clone || extend]"
+    ;;
+esac
