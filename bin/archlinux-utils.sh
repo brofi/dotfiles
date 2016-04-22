@@ -33,3 +33,16 @@ function archlinux_print_missing_aur_packages {
         fi
     done
 }
+
+# True if window manager present, false otherwise
+# see: https://specifications.freedesktop.org/wm-spec/1.3/ar01s03.html
+function archlinux_wm_check {
+    local prop=_NET_SUPPORTING_WM_CHECK
+    # Get id of child window created by window manager
+    local child_id=$(xprop -root $prop | grep -o "0x[[:xdigit:]]\+")
+    # If property not set, no WM is present
+    [ -z "$child_id" ] && return 1
+    # Child's prop must match child_id
+    [ "$child_id" = "$(xprop -id $child_id $prop | grep -o '0x[[:xdigit:]]\+')" ]
+    # At this point we could query the WM name: xprop -id $child_id _NET_WM_NAME
+}
