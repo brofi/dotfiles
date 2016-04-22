@@ -59,15 +59,26 @@ while true; do
     fi
 done
 
+cmd_noval="xinput --set-prop $pointer_id $property_id"
+
 # Get new property value from user
 while true; do
     echo
     read -p "Set $property_name (current: $property_value): " value
     if number_is_int $value || number_is_float $value; then
-        if xinput --set-prop $pointer_id $property_id $value > /dev/null; then
+        if $cmd_noval $value > /dev/null; then
             echo "$property_name set to $value" && break
         fi
     elif [ -n "$value" ]; then
         echo "'$value' is not a (floating point) number." 1>&2
     fi
 done
+
+# Create mouse config for use with .xinitrc if not existent
+[ ! -f ~/.mouse ] && echo "#!/bin/sh" > ~/.mouse && chmod u+x ~/.mouse
+
+# Replace value if property is already configured,
+# else merge the new property with the already sorted mouse config
+grep -q "$cmd_noval" ~/.mouse \
+    && sed -i "s/\($cmd_noval\).*/\1 $value/" ~/.mouse \
+    || echo $cmd_noval $value | sort -o ~/.mouse -m - ~/.mouse
