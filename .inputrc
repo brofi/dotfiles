@@ -1,0 +1,11 @@
+$include /etc/inputrc
+
+# colorize double tab completions
+set colored-stats on
+
+# change double tab to single tab
+# set show-all-if-unmodified on
+
+# single tab will partially complete the word AND
+# show all possible completions if it is still ambiguous
+set show-all-if-ambiguous on
