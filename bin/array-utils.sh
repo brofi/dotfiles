@@ -1,5 +1,8 @@
 # Collection of useful array functions
 
+# Just true
+function array_ { :;}
+
 # Appends given suffix to each element of given array
 # $1 suffix
 # $2 array by name
