@@ -1,28 +1,80 @@
 #!/bin/bash
 
-int="eDP1"
-# TODO get connected ext display name
-ext="HDMI1"
+. error-utils.sh
+. array-utils.sh
+. read-utils.sh
 
+int="DVI-I-1"
+ext="HDMI-0"
+
+# Readjusts background
 function set_bg {
     [ -x ~/.fehbg ] && . ~/.fehbg
 }
 
-case $1 in
-  intern)
-    xrandr --output $int --auto --output $ext --off && set_bg
-    ;;
-  extern)
-    xrandr --output $int --off --output $ext --auto && set_bg
-    ;;
-  clone)
-    res=$(xrandr -q | awk '/^ *[0-9]*x[0-9]*/{ print $1 }' | sort -n | uniq -d | tail -1)
-    xrandr --output $int --mode $res --output $ext --same-as $int --mode $res && set_bg
-    ;;
-  extend)
-    xrandr --output $int --auto --output $ext --auto --right-of $int && set_bg
-    ;;
-  *)
+# Prints usage
+function usage {
     echo "usage: display [intern || extern || clone || extend]"
-    ;;
+    exit 1
+}
+
+# Checks if given display exists and is connected
+# $1 display to check
+function is_connected {
+    xrandr | grep -w $1 | grep -qw connected
+}
+
+# check if parameter given, before reading in displays
+[ -z "$1" ] && usage
+
+# get connected displays
+_IFS=$IFS; IFS=$'\n'
+connected=($(xrandr | grep -w connected))
+IFS=$_IFS
+
+if ! is_connected $int; then
+    echo
+    err_print "Primary display '$int' doesn't exist or isn't connected."
+
+    # let user choose primary display
+    echo
+    echo "Choose primary display:"
+    read_choice "${connected[@]}"
+    # we only want the exit status, not the printed choices
+    choice=$?
+
+    # get actual display name
+    int=$(echo ${connected[$choice]} | cut -d' ' -f1)
+fi
+
+# same for second display
+if ! is_connected $ext; then
+    echo
+    err_print "Secondary display '$ext' doesn't exist or isn't connected."
+
+    echo
+    echo "Choose secondary display:"
+    read_choice "${connected[@]}"
+    choice=$?
+
+    ext=$(echo ${connected[$choice]} | cut -d' ' -f1)
+fi
+
+case $1 in
+    intern)
+        xrandr --output $int --auto --output $ext --off && set_bg
+        ;;
+    extern)
+        xrandr --output $int --off --output $ext --auto && set_bg
+        ;;
+    clone)
+        res=$(xrandr -q | awk '/^ *[0-9]*x[0-9]*/{ print $1 }' | sort -n | uniq -d | tail -1)
+        xrandr --output $int --mode $res --output $ext --same-as $int --mode $res && set_bg
+        ;;
+    extend)
+        xrandr --output $int --auto --output $ext --auto --right-of $int && set_bg
+        ;;
+    *)
+        usage
+        ;;
 esac
