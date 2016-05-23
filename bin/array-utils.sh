@@ -78,3 +78,13 @@ function array_first_index_of {
         [ "${array[$i]}" == "$1" ] && echo $i
     done
 }
+
+# Prints array in format
+# index) value\n
+# $1 array to print
+function array_print_indexed {
+    local array=("${@}")
+    for i in "${!array[@]}"; do
+        printf "%s) %s\n" "$i" "${array[$i]}"
+    done
+}
