@@ -17,7 +17,7 @@ function read_confirm {
         suffix="[y/N]"
     else
         # We keep in mind that we can only retun values <= 255 anyway
-        error "Default choice must be 0 (yes) or 1 (no)"
+        err_exit "Default choice must be 0 (yes) or 1 (no)" 1
     fi  
 
     while : ; do
