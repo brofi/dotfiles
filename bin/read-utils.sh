@@ -4,6 +4,10 @@
 if ! err_ > /dev/null 2>&1; then
     . error-utils.sh
 fi
+if ! array_ > /dev/null 2>&1; then
+    . array-utils.sh
+fi
+
 
 # Reads user input and returns 0 if the user confirms, 1 otherwise.
 # $1 question text
@@ -36,4 +40,20 @@ function read_confirm {
 # $4 action on discard
 function read_confirm_do {
     read_confirm "$1" $2 && $3 || $4
+}
+
+# Prints choices with index, reads user input and returns chosen index
+# $1 array with choices
+function read_choice {
+    local choices=("${@}")
+    array_print_indexed "${choices[@]}"
+    local max_idx=$((${#choices[@]} - 1))
+    while true; do
+        read -p "> " idx
+        case $idx in
+            [0-$max_idx]) return $idx;;
+            "") ;;
+            *) err_print "Selection '$idx' does not exist.";;
+        esac
+    done
 }
