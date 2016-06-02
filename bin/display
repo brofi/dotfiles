@@ -21,6 +21,7 @@ function usage {
 # Checks if given display exists and is connected
 # $1 display to check
 function is_connected {
+    [ -z "$1" ] && return 1
     xrandr | grep -w $1 | grep -qw connected
 }
 
