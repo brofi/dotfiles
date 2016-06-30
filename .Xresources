@@ -1,6 +1,14 @@
 Xcursor.theme: Simple-and-Soft
 #include ".colors/arc"
 
+! move-by-word-keys
+URxvt.keysym.C-Left: \033[1;5D
+URxvt.keysym.C-Right: \033[1;5C
+
+! Disable ctrl-shift iso 14755 mode
+URxvt.iso14755: false
+URxvt.iso14755_52: false
+
 ! tabbedex
 URxvt.tabbed.tabbar-fg: -2
 URxvt.tabbed.tabbar-bg: -1
@@ -9,6 +17,18 @@ URxvt.tabbed.tab-bg: -1
 URxvt.tabbed.autohide: yes
 URxvt.tabbed.new-button:  no
 URxvt.tabbed.title: no
+
+! Solve tabbedex conflicts with move-by-word-keys
+! We must explicitly disable default mappings beforehand (use git version for this)
+URxvt.tabbed.no-tabbedex-keys: true
+! Default
+URxvt.keysym.S-Down: perl:tabbedex:new_tab
+URxvt.keysym.S-Right: perl:tabbedex:next_tab
+URxvt.keysym.S-Left: perl:tabbedex:prev_tab
+URxvt.keysym.S-Up: perl:tabbedex:rename_tab
+! Add shift modifier to move keys
+URxvt.keysym.C-S-Left: perl:tabbedex:move_tab_left
+URxvt.keysym.C-S-Right: perl:tabbedex:move_tab_right
 
 ! resize-font
 URxvt.resize-font.smaller: C-minus
