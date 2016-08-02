@@ -12,5 +12,5 @@ export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true'
 # Warn the Java VM that xmonad is non-reparenting
 export _JAVA_AWT_WM_NONREPARENTING=1
 
-# Force GTK style (Qt5)
-export QT_STYLE_OVERRIDE=GTK+
+# Force GTK style (Qt5). Install qt5-styleplugins for this.
+export QT_STYLE_OVERRIDE=gtk2
