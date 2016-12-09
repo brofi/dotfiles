@@ -58,13 +58,13 @@ myChatLayout = noBorders $ withIM ratio matchSteam $  withIM ratio matchSkype $ 
     where
         ratio = 1%5
         matchSteam = And (ClassName "Steam")(Title "Friends")
-        matchSkype = And (ClassName "Skype")(Or (Title "schnugge. - Skype™")(Title "Skype™ 4.3 for Linux"))
+        matchSkype = And (ClassName "skypeforlinux")(Title "Skype for Linux Alpha")
         matchPidgin = And (ClassName "Pidgin")(Or (Role "buddy_list")(Role "accounts"))
 
 myLayout = avoidStruts $ toggleLayouts (myFull) $ mkToggle (single REFLECTX) $ mkToggle (single REFLECTY) $ onWorkspaces ["1", "2"] myMainLayout $ onWorkspace "5" myChatLayout $ myMainLayout
 
 myManageHook = composeAll
-    [ className =? "Skype" --> doShift "5"
+    [ className =? "skypeforlinux" --> doShift "5"
     , className =? "Pidgin" --> doShift "5"
     , className =? "Steam" --> doShift "5"
     --, className =? "Skype" --> doFloat

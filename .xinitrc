@@ -17,7 +17,7 @@ compton -b
 udiskie &
 mpd ~/.mpd/mpd.conf &
 dropbox &
-skype &
+skypeforlinux &
 pidgin &
 steam &
 
