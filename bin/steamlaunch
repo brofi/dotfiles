@@ -6,8 +6,8 @@
 # $1 game id
 # $2 (optional) window manager needed for steam
 
-. error-utils.sh
-. archlinux-utils.sh
+. ../lib/error-utils.sh
+. ../lib/archlinux-utils.sh
 
 # Game id must be present
 [ -z "$1" ] && err_exit "Please specify a gameid." 1

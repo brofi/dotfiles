@@ -3,8 +3,8 @@
 # $1 android api version
 # TODO api 23 should match e.g. android-sdk-build-tools-23.0.2
 
-. array-utils.sh
-. archlinux-utils.sh
+. ../lib/array-utils.sh
+. ../lib/archlinux-utils.sh
 
 version=$1
 

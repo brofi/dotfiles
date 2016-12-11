@@ -1,8 +1,8 @@
 #!/bin/bash
 # TODO bash completion
 
-. error-utils.sh
-. read-utils.sh
+. ../lib/error-utils.sh
+. ../lib/read-utils.sh
 
 # Get next unallocated virtual terminal
 next_vt=$(fgconsole --next-available)

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-. array-utils.sh
-. number-utils.sh
+. ../lib/array-utils.sh
+. ../lib/number-utils.sh
 
 _IFS=$IFS; IFS=$'\n'
 # Get IDs of all slave pointers

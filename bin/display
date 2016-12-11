@@ -1,8 +1,8 @@
 #!/bin/bash
 
-. error-utils.sh
-. array-utils.sh
-. read-utils.sh
+. ../lib/error-utils.sh
+. ../lib/array-utils.sh
+. ../lib/read-utils.sh
 
 int="DVI-I-1"
 ext="HDMI-0"
