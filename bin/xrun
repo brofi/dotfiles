@@ -1,8 +1,10 @@
 #!/bin/bash
 # TODO bash completion
 
-. ../lib/error-utils.sh
-. ../lib/read-utils.sh
+__dir=$(dirname "${BASH_SOURCE[0]}")
+
+. "$__dir/../lib/error-utils.sh"
+. "$__dir/../lib/read-utils.sh"
 
 # Get next unallocated virtual terminal
 next_vt=$(fgconsole --next-available)

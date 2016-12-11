@@ -3,8 +3,10 @@
 # $1 android api version
 # TODO api 23 should match e.g. android-sdk-build-tools-23.0.2
 
-. ../lib/array-utils.sh
-. ../lib/archlinux-utils.sh
+__dir=$(dirname "${BASH_SOURCE[0]}")
+
+. "$__dir/../lib/array-utils.sh"
+. "$__dir/../lib/archlinux-utils.sh"
 
 version=$1
 

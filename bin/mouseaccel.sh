@@ -1,7 +1,9 @@
 #!/bin/bash
 
-. ../lib/array-utils.sh
-. ../lib/number-utils.sh
+__dir=$(dirname "${BASH_SOURCE[0]}")
+
+. "$__dir/../lib/array-utils.sh"
+. "$__dir/../lib/number-utils.sh"
 
 _IFS=$IFS; IFS=$'\n'
 # Get IDs of all slave pointers

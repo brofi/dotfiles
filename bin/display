@@ -1,8 +1,9 @@
 #!/bin/bash
 
-. ../lib/error-utils.sh
-. ../lib/array-utils.sh
-. ../lib/read-utils.sh
+__dir=$(dirname "${BASH_SOURCE[0]}")
+. "$__dir/../lib/error-utils.sh"
+. "$__dir/../lib/array-utils.sh"
+. "$__dir/../lib/read-utils.sh"
 
 int="DVI-I-1"
 ext="HDMI-0"
