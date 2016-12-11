@@ -1,11 +1,13 @@
 # Collection of functions for reading user input
 
+__dir=$(dirname "${BASH_SOURCE[0]}")
+
 # Check dependencies
 if ! err_ > /dev/null 2>&1; then
-    . error-utils.sh
+    . "$__dir/error-utils.sh"
 fi
 if ! array_ > /dev/null 2>&1; then
-    . array-utils.sh
+    . "$__dir/array-utils.sh"
 fi
 
 
