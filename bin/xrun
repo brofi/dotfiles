@@ -43,7 +43,9 @@ $noconfirm \
 # Unsetting it should not do any harm, and can be useful.
 unset LIBGL_ALWAYS_INDIRECT
 
-xinit $client -- :$next_display vt$next_vt -nolisten tcp -br +bs &
+tmp_client=/tmp/xrunclient.sh
+echo -e ". ~/.xinitrc_base\n$client" > $tmp_client
+xinit $tmp_client -- :$next_display vt$next_vt -nolisten tcp -br +bs &
 
 # Set new dislplay
 DISPLAY=:$next_display

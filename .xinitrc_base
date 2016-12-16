@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# don't run in background
+xrdb ~/.Xresources
+
+# load scripts from xinitrc.d
+if [ -d /etc/X11/xinit/xinitrc.d ] ; then
+    for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
+        [ -x "$f" ] && . "$f"
+    done
+    unset f
+fi
+
+xsetroot -cursor_name left_ptr &
+setxkbmap -layout us -variant altgr-intl &
+
+~/.fehbg &
+~/.mouse &

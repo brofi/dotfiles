@@ -1,18 +1,7 @@
 #!/bin/sh
 
-# don't run in background
-xrdb ~/.Xresources
+. ~/.xinitrc_base
 
-# load scripts from xinitrc.d
-if [ -d /etc/X11/xinit/xinitrc.d ] ; then
-    for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
-        [ -x "$f" ] && . "$f"
-    done
-    unset f
-fi
-
-~/.fehbg &
-~/.mouse &
 compton -b
 udiskie &
 mpd ~/.mpd/mpd.conf &
@@ -36,8 +25,6 @@ trayer \
     --margin 970 \
     --distance 1 &
 
-xsetroot -cursor_name left_ptr &
-setxkbmap -layout us -variant altgr-intl &
 
 exec xmonad
 # exec openbox
