@@ -15,12 +15,12 @@ __dir=$(dirname "${BASH_SOURCE[0]}")
 [ -z "$1" ] && err_exit "Please specify a gameid." 1
 
 # Launch game
-steam steam://rungameid/$1 &
+steam-native steam://rungameid/$1 &
 
 # Steam needs a window manager, so we start openbox if no WM is running
 if ! archlinux_wm_check; then
     # Use openbox as WM, if none specified
     wm=${2:-openbox}
     command -v $wm > /dev/null || err_exit "'$1' is not a command." 127
-    $wm
+    exec $wm
 fi

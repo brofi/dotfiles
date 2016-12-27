@@ -8,7 +8,7 @@ mpd ~/.mpd/mpd.conf &
 dropbox &
 skypeforlinux &
 pidgin &
-steam &
+steam-native &
 
 unclutter \
     -grab \
