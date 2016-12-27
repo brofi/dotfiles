@@ -1,0 +1,11 @@
+-- Non-standard configuration options not available as command line options.
+-- Available command line options are passed via xmonad.
+Config {
+         -- If you're running xmobar in a tiling window manager, you might need to
+         -- set this option to False so that it behaves as a docked application.
+         -- Defaults to True.
+         -- Solves overlapping of xmonad windows on first workspace.
+         overrideRedirect = False
+       }
+
+-- vim: set filetype=haskell:

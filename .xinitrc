@@ -16,14 +16,6 @@ unclutter \
     -noevents \
     -root &
 
-trayer \
-    --SetDockType true \
-    --edge top \
-    --align left \
-    --widthtype request \
-    --height 19 \
-    --margin 970 \
-    --distance 1 &
 
 
 exec xmonad
