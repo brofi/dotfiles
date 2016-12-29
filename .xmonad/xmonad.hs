@@ -428,9 +428,8 @@ keys' = [-- launch dmenu
           -- toggle horizontal and vertical reflection
           , ((modMask' .|. controlMask, xK_x), sendMessage $ Toggle REFLECTX)
           , ((modMask' .|. controlMask, xK_y), sendMessage $ Toggle REFLECTY)
-          -- TODO merge?
-          , ((modMask', xK_q), spawn "if command -v xmonad; then xmonad --recompile && xmonad --restart; fi")
-          , ((modMask', xK_g), runHaddock)
+          -- run haddock together with recompile and restart
+          , ((modMask', xK_q), runHaddock >> rr)
         ]
 
 -- | Override default configuration.
@@ -581,3 +580,7 @@ iHaddock = [("https://downloads.haskell.org/~ghc/latest/docs/html/libraries/base
              "/usr/share/doc/xmonad/html/xmonad.haddock"),
             ("http://xmonad.org/xmonad-docs/xmonad-contrib/",
              "/usr/share/doc/xmonad-contrib/html/xmonad-contrib.haddock")]
+
+-- | Recompiles and restarts xmonad.
+rr :: MonadIO m => m ()
+rr = spawn "command -v xmonad && xmonad --recompile && xmonad --restart"
