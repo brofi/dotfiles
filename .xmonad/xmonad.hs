@@ -24,9 +24,7 @@ import XMonad.Hooks.DynamicLog (statusBar
     ,PP,ppCurrent,ppVisible,ppHidden,ppHiddenNoWindows,ppUrgent
     ,ppSep,ppWsSep,ppTitle,ppLayout,ppOrder,ppSort,ppExtras
     ,xmobarColor,dzenColor,shorten,pad,wrap)
-import XMonad.Hooks.EwmhDesktops
-    (ewmh,fullscreenEventHook,ewmhDesktopsEventHook
-    ,ewmhDesktopsLogHook,ewmhDesktopsStartup)
+import XMonad.Hooks.EwmhDesktops (ewmh,fullscreenEventHook)
 import XMonad.Hooks.ManageDocks (AvoidStruts) -- for type only
 import XMonad.Layout.Grid (Grid(Grid))
 import XMonad.Layout.LayoutModifier (ModifiedLayout) -- for type only
@@ -191,34 +189,13 @@ manageHook' = composeAll
 
 {- | Custom 'handleEventHook'.
 
-Compose event hooks with '<+>' or a list with 'composeAll'.
+Compose event hooks with '<+>'.
 
-Added 'ewmhDesktopsEventHook' to be able to react to
-
-* @_NET_CURRENT_DESKTOP@ (switching desktops)
-* @_NET_WM_DESKTOP@ (move windows to other desktops)
-* @_NET_ACTIVE_WINDOW@ (activate another window, changing workspace if needed)
-and 'fullscreenEventHook' to \"handle applications that wish to fullscreen using
+Added 'fullscreenEventHook' to \"handle applications that wish to fullscreen using
 the @_NET_WM_STATE@ protocol\".
 -}
 eventHook' :: Event -> X All
-eventHook' = fullscreenEventHook <+> ewmhDesktopsEventHook
-
-{- | Custom 'logHook'.
-
-Added 'ewmhDesktopsLogHook' to \"notify pagers and window lists,
-such as those in the gnome-panel of the current state of workspaces and windows\".
- -}
-logHook' :: X ()
-logHook' = ewmhDesktopsLogHook
-
-{- | Custom 'startupHook'.
-
-Added 'ewmhDesktopsStartup' to \"initialize EwmhDesktops and
-advertise EWMH support to the X server\".
- -}
-startupHook' :: X ()
-startupHook' = ewmhDesktopsStartup
+eventHook' = fullscreenEventHook
 
 -- | Directory of xmonad.hs.
 configDir :: IO FilePath
@@ -472,8 +449,6 @@ config' = ewmh def
     , layoutHook         = layout'
     , manageHook         = manageHook'
     , handleEventHook    = eventHook'
-    , logHook            = logHook'
-    , startupHook        = startupHook'
     }
 
 {- | Main entry point.
