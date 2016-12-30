@@ -50,7 +50,7 @@ import XMonad.Layout.Tabbed
 -- TODO read colors from .Xresources
 -- <https://downloads.haskell.org/~ghc/latest/docs/html/libraries/terminfo-0.4.0.2/System-Console-Terminfo-Color.html terminfo colors>
 -- | Default colors.
-bg, fg, blue, green, red :: String
+bg, fg, blue, green, red, orange :: String
 bg     = "#2f343b"
 fg     = "#d3dae3"
 blue   = "#48c6ff"
@@ -215,9 +215,9 @@ dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg
         ++ "' -sf '" ++ blue ++ "' -sb '" ++ bg
         ++ "' -p '>' -fn '" ++ xftFont ++ "'"
 
--- | trayer with command line options.
 -- TODO calc margin
 -- TODO height = statusBarHeight - distance
+-- | trayer with command line options.
 trayer :: String
 trayer = "trayer"
          ++ " --SetDockType true"
@@ -254,8 +254,8 @@ defaultPP' :: (String -> String -> String -> String) -- ^ color format function
            -> (String -> String) -- ^ icon format function
            -> PP
 defaultPP' c i = def
-    { ppCurrent         = c blue "" . wrap "[" "]"
-    , ppVisible         = wrap "(" ")"
+    { ppCurrent         = c blue "" . wrap' "[" "]"
+    , ppVisible         = wrap' "(" ")"
     , ppHidden          = id
     , ppHiddenNoWindows = const ""
     , ppUrgent          = c red ""
@@ -293,7 +293,8 @@ xmobarCommands =
     , "Run Memory " ++ xmobarArgs memArgs ++ " 5"
     , "Run Date " ++ (quote . xmobarColor blue "") "%a %b %_d %l:%M" ++ " " ++ quote "date" ++ " 10"
     , "Run Uptime " ++ xmobarArgs upArgs ++ " 300"
-    , "Run Volume " ++ quote "default" ++ " " ++ quote "Master" ++ " " ++ xmobarArgs volArgs ++ " 5" ]
+    , "Run Volume " ++ quote "default" ++ " " ++ quote "Master" ++ " " ++ xmobarArgs volArgs ++ " 5"
+    , "Run BatteryP " ++ xmobarArgs ["BAT0"] ++ " " ++ xmobarArgs batArgs ++ " 15" ]
   where
     wthrArgs = [ "-t", "<tempC>C"
                , "-L", "18", "-H", "25"
@@ -314,14 +315,21 @@ xmobarCommands =
                , "--used-icon-pattern", xmobarIcon "mem_%%.xpm" ]
     upArgs   = [ "-t", "up <hours> <minutes>"
                , "-S", "True" ]
-    volArgs  = [ "-t", "<volumeipat> <volume>% <status>"
+    volArgs  = [ "-t", "<volumeipat> <volume>%<status>"
                , "--"
-               , "-O", " ", "-c", red
+               , "-O", "", "-o", " [off]", "-c", red
                , "--volume-icon-pattern", xmobarIcon "vol_%%.xpm" ]
+    batArgs  = [ "-t", "<leftipat> <left>%"
+               , "-L", "15", "-H", "50"
+               , "-l", red, "-h", green
+               , "--"
+               , "--off-icon-pattern", xmobarIcon "bat_off_%%.xpm"
+               , "--on-icon-pattern", xmobarIcon "bat_on_%%.xpm"
+               , "--idle-icon-pattern", xmobarIcon "bat_off_%%.xpm" ]
 
 -- | Ordered list of Xmobar plugins.
 xmobarTemplate :: [String]
-xmobarTemplate = ["dynnetwork", "cpu", "memory", xmobarWeatherStationId, "date", "uptime", "default:Master"]
+xmobarTemplate = ["dynnetwork", "cpu", "memory", xmobarWeatherStationId, "date", "uptime", "default:Master", "battery"]
 
 -- | Seperator used between Xmobar plugin templates.
 xmobarTemplateSep :: String
@@ -351,7 +359,7 @@ xmobar' conf = statusBar ("xmobar ~/.xmobar/xmobarrc " ++ flags) xmobarFocusedPP
              ++ "' -a '" ++ asep
              ++ "' -s '" ++ sep
              ++ "' -i '" ++ iconRoot
-             ++ "' -t '" ++ pad templL ++ asep ++ templR
+             ++ "' -t '" ++ pad (templL ++ asep ++ templR)
              ++ "' -c '" ++ listString ("Run StdinReader" : xmobarCommands)
              ++ "' -d" -- same as overrideRedirect = False
 
@@ -499,6 +507,7 @@ dzenIcon = wrap "^i(" ")" . (++) (iconRoot ++ "/")
 
 Example:
 
+> quote "" -> "\"\""
 > quote "hello" -> "\"hello\""
 
 -}
@@ -542,21 +551,34 @@ dzenEvents = intercalate ";" . map (\(e, as) -> e ++ "=" ++ actions as)
 
 Example:
 
+> listString [] = "[]"
 > listString ["an", "example"] -> "[an, example]"
 
 -}
 listString :: [String] -> String
-listString = wrap "[" "]" . intercalate ", "
+listString = wrap' "[" "]" . intercalate ", "
 
 {- | String padded with the same string on both sides.
 
 Example:
 
+> pad' "%" "" -> "%%"
 > pad' "%" "hello" -> "%hello%"
 
 -}
 pad' :: String -> String -> String
-pad' w = wrap w w
+pad' w = wrap' w w
+
+{- | String wrapped in given left and right string.
+
+Example:
+
+@wrap' "[" "]" "" -> "[]"
+wrap' "[" "]" "myString" -> "[myString]" (same as 'wrap')@
+
+-}
+wrap' :: String -> String -> String -> String
+wrap' l r w = l ++ w ++ r
 
 {- | Run haddock on xmonad.hs and the output in a \"doc\" folder next to it.
 
