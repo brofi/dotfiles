@@ -12,6 +12,8 @@
 
 module Main where
 
+import Colors as C
+
 import Control.Monad (liftM)
 import Data.List (intercalate)
 import Data.Monoid (All) -- for type only
@@ -47,16 +49,6 @@ import XMonad.Util.WorkspaceCompare (getSortByIndex) -- ppSort
 -- import XMonad.Layout.Magnifier
 import XMonad.Layout.Tabbed
 
--- TODO read colors from .Xresources
--- <https://downloads.haskell.org/~ghc/latest/docs/html/libraries/terminfo-0.4.0.2/System-Console-Terminfo-Color.html terminfo colors>
--- | Default colors.
-bg, fg, blue, green, red, orange :: String
-bg     = "#2f343b"
-fg     = "#d3dae3"
-blue   = "#48c6ff"
-green  = "#ccff00"
-red    = "#ff00a0"
-orange = "#ff9f00"
 
 -- | List of workspace names.
 workspaces' :: [WorkspaceId]
@@ -75,7 +67,7 @@ modMask' :: KeyMask
 modMask' = mod4Mask
 
 -- | Xmonad border colors.
-normalBorderColor', focusedBorderColor' :: String
+normalBorderColor', focusedBorderColor' :: C.Color
 normalBorderColor'  = bg
 focusedBorderColor' = blue
 
@@ -588,7 +580,7 @@ runHaddock :: MonadIO m => m ()
 runHaddock = do
     d <- io haddockDir
     c <- io configDir
-    spawn ("haddock" ++ o ++ i ++ " -o " ++ d ++ " " ++ c ++ "/xmonad.hs")
+    spawn ("haddock" ++ o ++ i ++ " -o " ++ d ++ " " ++ c ++ "/xmonad.hs " ++ c ++ "/lib/*.hs")
       where
         o = " -h --pretty-html --hyperlinked-source --no-print-missing-docs"
         i = concatMap (\(u,i) -> " -i " ++ u ++ "," ++ i) iHaddock
