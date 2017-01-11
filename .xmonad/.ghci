@@ -1,0 +1,2 @@
+-- Add lib folder to module import search paths.
+:set -ilib
