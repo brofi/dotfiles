@@ -189,13 +189,9 @@ the @_NET_WM_STATE@ protocol\".
 eventHook' :: Event -> X All
 eventHook' = fullscreenEventHook
 
--- | Directory of xmonad.hs.
-configDir :: IO FilePath
-configDir = liftM (++ "/.dotfiles/.xmonad") getHomeDirectory
-
 -- | Directory used for haddock output.
-haddockDir :: IO FilePath
-haddockDir = liftM (++ "/doc") configDir
+haddockDir :: MonadIO m => m String
+haddockDir = liftM (++ "/doc") getXMonadDir
 
 -- | Icon root directory used for status bars.
 iconRoot :: String
@@ -578,8 +574,8 @@ The used haddock interfaces are defined in 'iHaddock'.
 -}
 runHaddock :: MonadIO m => m ()
 runHaddock = do
-    d <- io haddockDir
-    c <- io configDir
+    d <- haddockDir
+    c <- getXMonadDir
     spawn ("haddock" ++ o ++ i ++ " -o " ++ d ++ " " ++ c ++ "/xmonad.hs " ++ c ++ "/lib/*.hs")
       where
         o = " -h --pretty-html --hyperlinked-source --no-print-missing-docs"
