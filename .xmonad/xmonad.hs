@@ -20,6 +20,7 @@ import Data.Monoid (All) -- for type only
 import qualified Data.Map as M
 import Graphics.X11.ExtraTypes.XF86 -- to use xF86XK_* in key bindings
 import System.Directory (getHomeDirectory,createDirectoryIfMissing)
+import System.Process (readProcess)
 
 import XMonad
 import XMonad.Hooks.DynamicLog (statusBar
@@ -576,20 +577,30 @@ runHaddock :: MonadIO m => m ()
 runHaddock = do
     d <- haddockDir
     c <- getXMonadDir
+    i <- io $ (concatMap (\(u,i) -> " -i " ++ u ++ "," ++ i) . iHaddock) <$> basePkg
     spawn ("haddock" ++ o ++ i ++ " -o " ++ d ++ " " ++ c ++ "/xmonad.hs " ++ c ++ "/lib/*.hs")
       where
         o = " -h --pretty-html --hyperlinked-source --no-print-missing-docs"
-        i = concatMap (\(u,i) -> " -i " ++ u ++ "," ++ i) iHaddock
 
--- TODO get base version
 -- | List of haddock interfaces.
-iHaddock :: [(String, String)] -- ^ Documentation base URL paired with path to haddock file.
-iHaddock = [("https://downloads.haskell.org/~ghc/latest/docs/html/libraries/base-4.9.0.0/",
-             "/usr/share/doc/ghc/html/libraries/base-4.9.0.0/base.haddock"),
-            ("http://xmonad.org/xmonad-docs/xmonad/",
-             "/usr/share/doc/xmonad/html/xmonad.haddock"),
-            ("http://xmonad.org/xmonad-docs/xmonad-contrib/",
-             "/usr/share/doc/xmonad-contrib/html/xmonad-contrib.haddock")]
+iHaddock :: String -- ^ Base package name with version.
+         -> [(String, String)] -- ^ (doc location, path to haddock file).
+iHaddock b = let dd = "/usr/share/doc"
+             in map (\(p, f) -> (dd ++ p, dd ++ p ++ "/" ++ f ++ ".haddock"))
+               [ ("/ghc/html/libraries/" ++ b, "base")
+               , ("/haskell-x11/html", "X11")
+               , ("/xmonad/html", "xmonad")
+               , ("/xmonad-contrib/html", "xmonad-contrib") ]
+
+{- | Base package string with version (@ghc-pkg --simple-output list base@).
+
+Example:
+
+> basePkg -> "base-4.9.0.0"
+
+-}
+basePkg :: IO String
+basePkg = (head . lines) <$> readProcess "ghc-pkg" ["--simple-output", "list", "base"] []
 
 -- | Recompiles and restarts xmonad.
 rr :: MonadIO m => m ()
