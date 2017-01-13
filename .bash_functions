@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # colored man pages
 # Termcap/Terminfo: {{{
 # termcap terminfo
@@ -38,3 +40,17 @@ man() {
     LESS_TERMCAP_ue="$(tput rmul; tput sgr0)" \
     man "$@"
 }
+
+# Convert given hex color value to a (nearest) 0-255 color index.
+cfromhex() {
+    [ "$#" -eq 1 ] || return 1
+    local c=${1#\#} r g b
+    r=$(printf '0x%0.2s' "$c")
+    g=$(printf '0x%0.2s' "${c:2}")
+    b=$(printf '0x%0.2s' "${c:4}")
+    printf '%03d' "$(( (r<75?0:(r-35)/40)*6*6 +
+                       (g<75?0:(g-35)/40)*6   +
+                       (b<75?0:(b-35)/40)     + 16 ))"
+}
+
+# vim: set ft=sh fdm=marker:
