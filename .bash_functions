@@ -53,4 +53,10 @@ cfromhex() {
                        (b<75?0:(b-35)/40)     + 16 ))"
 }
 
+# Disown given command. Don't log it's output.
+fu() {
+    command -v "$1" > /dev/null || return 1
+    nohup "$1" > /dev/null 2>&1 &
+}
+
 # vim: set ft=sh fdm=marker:
