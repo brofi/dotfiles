@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# shellcheck source=.xinitrc_base
 . ~/.xinitrc_base
 
 compton -b
