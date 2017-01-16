@@ -1,5 +1,5 @@
 Xcursor.theme: Simple-and-Soft
-#include ".colors/arc"
+#include ".colors/gruvbox-dark"
 
 ! move-by-word-keys
 URxvt.keysym.C-Left: \033[1;5D
