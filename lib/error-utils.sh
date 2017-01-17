@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # Collection of useful error handling functions
 
 # Just true
@@ -15,5 +17,5 @@ function err_exit {
         err_exit "Exit value should be between 0 and 255" 1
     fi
 
-    err_print "$1" && exit $2
+    err_print "$1" && exit "$2"
 }

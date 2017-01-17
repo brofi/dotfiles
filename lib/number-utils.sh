@@ -1,4 +1,5 @@
 #!/bin/bash
+#
 # Collection of useful number functions
 
 # True if $1 is natural number
@@ -11,7 +12,7 @@ function number_is_uint {
 
 # True if $1 is signed (+/-) natural number
 function number_is_int {
-    number_is_uint ${1#[-+]}
+    number_is_uint "${1#[-+]}"
 }
 
 # True if $1 is
@@ -30,5 +31,5 @@ function number_is_ufloat {
 # True if $1 is +f or -f
 # with number_is_ufloat f = true
 function number_is_float {
-    number_is_ufloat ${1#[-+]}
+    number_is_ufloat "${1#[-+]}"
 }
