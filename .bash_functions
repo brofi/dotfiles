@@ -59,4 +59,13 @@ fu() {
     nohup "$1" > /dev/null 2>&1 &
 }
 
+# Exchange the names of two given files.
+switch() {
+    local tmp
+    tmp=$(mktemp "/tmp/$(basename "$1").XXXXXXXXXX") || return 1
+    mv "$1" "$tmp"
+    mv "$2" "$1"
+    mv "$tmp" "$2"
+}
+
 # vim: set ft=sh fdm=marker:
