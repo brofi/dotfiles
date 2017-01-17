@@ -1,16 +1,16 @@
-export TERM="xterm-256color"
+#!/bin/sh
+
 export PATH=~/bin:$PATH:/opt/android-sdk/tools:/opt/android-sdk/platform-tools
 export EDITOR="vim"
-export BROWSER="google-chrome-stable"
+export BROWSER="xdg-open"
 
-export NVM_DIR="/home/and1/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
-
-# Use system anti-aliased fonts for java
+# Use system anti-aliased fonts for java.
 export _JAVA_OPTIONS='-Dawt.useSystemAAFontSettings=on -Dswing.aatext=true'
 
-# Warn the Java VM that xmonad is non-reparenting
+# Warn the Java VM that xmonad is non-reparenting.
 export _JAVA_AWT_WM_NONREPARENTING=1
 
 # Force GTK style (Qt5). Install qt5-styleplugins for this.
 export QT_STYLE_OVERRIDE=gtk2
+
+# vim: set filetype=sh:
