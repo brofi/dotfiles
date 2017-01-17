@@ -20,6 +20,7 @@ xres=~/.Xresources
 
 [ -f "$xres" ] || exit 1
 
+xres=$(readlink -f "$xres")
 xres_tmp=$(mktemp "/tmp/$(basename "$xres").XXXXXXXXXX") || exit 1
 cp "$xres" "$xres_tmp"
 
@@ -37,7 +38,7 @@ IFS=$_IFS
 for i in "${includes[@]}"; do
     # $i could be a relative path.
     pi="$i"
-    [ -f "$pi" ] || pi="$(cd "$(dirname "$xres")" && pwd)/$i"
+    [ -f "$pi" ] || pi="$(dirname "$xres")/$i"
     # Use '_' as a delimiter since $i might include slashes.
     sed -e '\_'"${inclPP}${i}${inclSP}"'_{
         r '"$pi"'
