@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# Sets prompt dependent on given number of colors.
+
+case $1 in
+    ''|*[!0-9]*) return ;;
+esac
+
+# Turn off all attributes
+rs="\[$(tput sgr0)\]"
+
+# Turn on bold (extra bright) mode
+if tput bold > /dev/null 2>&1; then
+    bold="\[$(tput bold)\]"
+fi
+
+if [ "$1" -ge 256 ]; then
+    r="\[$(tput setaf 167)\]"
+    g="\[$(tput setaf 142)\]"
+    y="\[$(tput setaf 214)\]"
+    b="\[$(tput setaf 109)\]"
+elif [ "$1" -ge 8 ]; then
+    r="\[$(tput setaf 1)\]"
+    g="\[$(tput setaf 2)\]"
+    y="\[$(tput setaf 3)\]"
+    b="\[$(tput setaf 4)\]"
+fi
+
+# Prints exit code if there was an error.
+function err_status {
+    local ec=$?
+    [ $ec -ne 0 ] && echo "$ec "
+}
+
+# Primary prompt.
+export PS1="\n${bold}${g}\u@\h ${y}\w\n${r}\$(err_status)${rs}\$ "
+# Secondary prompt (e.g. multi-line command).
+export PS2="${bold}${b}>${rs} "
+
+unset rs bold r g y b
