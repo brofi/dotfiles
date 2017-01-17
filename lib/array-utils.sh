@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # Collection of useful array functions
 
 # Just true
@@ -7,14 +9,10 @@ function array_ { :;}
 # $1 suffix
 # $2 array by name
 function array_suffix {
-    local suffix=$1
-
-    local tmp=$2[@]
+    local tmp=$2"[@]"
     local array=("${!tmp}")
 
-    local suffixed_array=("${array[@]/%/$1}")
-
-    eval "$2"'=("${suffixed_array[@]}")'
+    eval "$2"'=("${array[@]/%/'"$1"'}")'
 }
 
 # Returns the given array with those elements that satisfy the predicate
@@ -27,14 +25,14 @@ function array_filter {
     # local -n array="$2"
     # without the next two statements and without eval at the end.
     # However local -n is bash >= 4.3
-    local tmp=$2[@]
+    local tmp=$2"[@]"
     local array=("${!tmp}")
 
     for i in "${!array[@]}"; do
-        if ! $predicate "${array[$i]}"; then 
-            unset array[$i]
-        fi   
-    done 
+        if ! $predicate "${array[$i]}"; then
+            unset "array[$i]"
+        fi
+    done
     eval "$2"'=("${array[@]}")'
 }
 
@@ -44,7 +42,7 @@ function array_filter {
 # $2 array by name
 function array_take_while {
     local predicate=$1
-    local tmp=$2[@]
+    local tmp=$2"[@]"
     local array=("${!tmp}")
 
     local idx=${#array[@]}
@@ -75,7 +73,7 @@ function array_elem {
 function array_first_index_of {
     local array=("${@:2}")
     for i in "${!array[@]}"; do
-        [ "${array[$i]}" == "$1" ] && echo $i
+        [ "${array[$i]}" == "$1" ] && echo "$i"
     done
 }
 
