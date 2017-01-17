@@ -1,0 +1,75 @@
+#!/bin/bash
+#
+# Reads color definitions from Xresources and initializes the first 16 colors of
+# a terminal. This script can also handle colors which are included via
+# '#include'. Includes inside included files are not supported yet. Currently
+# supported terminals are 'linux' and 'fbterm. We don't use 'tput initc' to
+# initialize color #1 to (#2,#3,#4), since the ranges of these colors are
+# terminal-dependent (see 'terminfo'). For the linux terminal we would've to
+# multiply the decimal red, green and blue value with 1000 and divide by 255
+# (see 'infocmp linux | grep initc'). For fbterm the range is 0-255. Since 'tput
+# initc' is terminal-dependent we just use the escape codes.
+
+# Only supports fbterm and linux (see above).
+if [ "$TERM" != "fbterm" ] && [ "$TERM" != "linux" ]; then
+    exit 1
+fi
+
+# Path to the Xresources file.
+xres=~/.Xresources
+
+[ -f "$xres" ] || exit 1
+
+xres_tmp=$(mktemp "/tmp/$(basename "$xres").XXXXXXXXXX") || exit 1
+cp "$xres" "$xres_tmp"
+
+# Xresources include prefix pattern.
+inclPP='^[[:blank:]]*#[[:blank:]]*include[[:blank:]]*["<]\{1\}'
+# Xresources include suffix pattern.
+inclSP='[">]\{1\}'
+
+_IFS=$IFS; IFS=$'\n'
+# Get all Xresources include filenames.
+includes=($(sed -n 's/'"$inclPP"'\(.*\)'"$inclSP"'/\1/p' "$xres_tmp"))
+IFS=$_IFS
+
+# Replace include statements with file contents.
+for i in "${includes[@]}"; do
+    # $i could be a relative path.
+    pi="$i"
+    [ -f "$pi" ] || pi="$(cd "$(dirname "$xres")" && pwd)/$i"
+    # Use '_' as a delimiter since $i might include slashes.
+    sed -e '\_'"${inclPP}${i}${inclSP}"'_{
+        r '"$pi"'
+        d
+    }' -i "$xres_tmp"
+done
+unset i pi
+
+# TODO check for new includes.
+
+# Remove comments, then trailing tabs and spaces, then empty lines and leave
+# only color definitions in format n:x , n <- [0-9]{1,2}, x <- [[:xdigit:]]{6}.
+sed -n \
+    -e 's/!.*//' \
+    -e 's/[[:blank:]]*$//' \
+    -e '/^$/ d' \
+    -e 's/.*color\([0-9]\{1,2\}\)[[:blank:]]*:[[:blank:]]*#\([[:xdigit:]]\{6\}$\)/\1:\2/p' \
+    -i "$xres_tmp"
+
+# We reverse the file before selecting unique color numbers, since a subsequent
+# color definition overrides a previous one.
+for i in $(tac "$xres_tmp" | sort -n -t: -u -k1,1); do
+    c=${i#*:}
+    n=${i%:*}
+    r="0x${c: :2}"
+    g="0x${c:2:2}"
+    b="0x${c: -2}"
+    if [ "$TERM" = "fbterm" ]; then
+        printf "\033[3;%d;%d;%d;%d}" "$n" "$r" "$g" "$b"
+    elif [ "$TERM" = "linux" ]; then
+        printf "\033]P%x%x%x%x" "$n" "$r" "$g" "$b"
+    fi
+done
+
+unset i c n r g b
