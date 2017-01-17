@@ -51,6 +51,8 @@ alias h='history'
 alias adbtop='adb shell top -d 1'
 # Shows volume in % (like alsamixer would show it).
 alias vol="amixer sget -M Master | grep -om1 '[0-9]\{1,3\}%'"
+# Generates package metadata in current directory.
+alias srcinfo='makepkg --printsrcinfo > .SRCINFO'
 
 ### Safety last
 alias rm='rm -i'
