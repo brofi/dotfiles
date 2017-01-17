@@ -68,4 +68,12 @@ switch() {
     mv "$tmp" "$2"
 }
 
+cssip() {
+    read -rp "Server password: " pw
+    local ipp='[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+    echo "connect" \
+         "$(ping -c 1 andyroid.de | grep -Eo -m 1 "$ipp"):27015;" \
+         "password $pw"
+}
+
 # vim: set ft=sh fdm=marker:
