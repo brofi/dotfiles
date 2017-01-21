@@ -1,65 +1,95 @@
 #!/bin/bash
 #
-# Reads color definitions from Xresources and initializes the first 16 colors of
-# a terminal. This script can also handle colors which are included via
-# '#include'. Includes inside included files are not supported yet. Currently
-# supported terminals are 'linux' and 'fbterm. We don't use 'tput initc' to
-# initialize color #1 to (#2,#3,#4), since the ranges of these colors are
-# terminal-dependent (see 'terminfo'). For the linux terminal we would've to
-# multiply the decimal red, green and blue value with 1000 and divide by 255
-# (see 'infocmp linux | grep initc'). For fbterm the range is 0-255. Since 'tput
-# initc' is terminal-dependent we just use the escape codes.
+# Reads color definitions from the X server resource database (if a display is
+# available) or from the Xresources file (if no display is available) and
+# initializes the first 16 colors of a terminal. If the colors are read from the
+# Xresources file manually, only includes inside the Xresources file itself are
+# supported. Currently supported terminals are 'linux' and 'fbterm. We don't use
+# 'tput initc' to initialize color #1 to (#2,#3,#4), since the ranges of these
+# colors are terminal-dependent (see 'terminfo'). For the linux terminal we
+# would've to multiply the decimal red, green and blue value with 1000 and
+# divide by 255 (see 'infocmp linux | grep initc'). For fbterm the range is
+# 0-255. Since 'tput initc' is terminal-dependent we just use the escape codes.
 
 # Only supports fbterm and linux (see above).
 if [ "$TERM" != "fbterm" ] && [ "$TERM" != "linux" ]; then
     exit 1
 fi
 
-# Path to the Xresources file.
-xres=~/.Xresources
+# Matches color definitions and remembers the color number and the hexadecimal
+# rgb string after '#' (for use with sed).
+colorP='.*color\([0-9]\{1,2\}\)[[:blank:]]*:[[:blank:]]*#\([[:xdigit:]]\{6\}$\)'
 
-[ -f "$xres" ] || exit 1
+# Get colors with xrdb -query {{{
+# $1 diplay for xrdb.
+function get_colors_xrdb {
+    [ -S /tmp/.X11-unix/X0 ] || return 1
 
-xres_tmp=$(mktemp "/tmp/$(basename "$xres").XXXXXXXXXX") || exit 1
-cp "$xres" "$xres_tmp"
+    _IFS=$IFS; IFS=$'\n'
+    # Get color definitions in format n:x , n <- [0-9]{1,2}, x <- [[:xdigit:]]{6}.
+    colors=($(xrdb -query -display ':0' | sed -n 's/'"$colorP"'/\1:\2/p'))
+    IFS=$_IFS
+}
+# }}}
 
-# Xresources include prefix pattern.
-inclPP='^[[:blank:]]*#[[:blank:]]*include[[:blank:]]*["<]\{1\}'
-# Xresources include suffix pattern.
-inclSP='[">]\{1\}'
+# Get colors manually {{{
+# $1 Path to the Xresources file
+function get_colors_manually {
+    [ -f "$1" ] || exit 1
 
-_IFS=$IFS; IFS=$'\n'
-# Get all Xresources include filenames.
-includes=($(sed -n 's/'"$inclPP"'\(.*\)'"$inclSP"'/\1/p' "$xres_tmp"))
-IFS=$_IFS
+    xres_tmp=$(mktemp "/tmp/$(basename "$1").XXXXXXXXXX") || exit 1
+    cp "$1" "$xres_tmp"
 
-# Replace include statements with file contents.
-for i in "${includes[@]}"; do
-    # $i could be a relative path.
-    pi="$i"
-    [ -f "$pi" ] || pi="$(cd "$(dirname "$xres")" && pwd)/$i"
-    # Use '_' as a delimiter since $i might include slashes.
-    sed -e '\_'"${inclPP}${i}${inclSP}"'_{
-        r '"$pi"'
-        d
-    }' -i "$xres_tmp"
-done
-unset i pi
+    # Xresources include prefix pattern.
+    local inclPP='^[[:blank:]]*#[[:blank:]]*include[[:blank:]]*["<]\{1\}'
+    # Xresources include suffix pattern.
+    local inclSP='[">]\{1\}'
 
-# TODO check for new includes.
+    _IFS=$IFS; IFS=$'\n'
+    # Get all Xresources include filenames.
+    includes=($(sed -n 's/'"$inclPP"'\(.*\)'"$inclSP"'/\1/p' "$xres_tmp"))
+    IFS=$_IFS
 
-# Remove comments, then trailing tabs and spaces, then empty lines and leave
-# only color definitions in format n:x , n <- [0-9]{1,2}, x <- [[:xdigit:]]{6}.
-sed -n \
-    -e 's/!.*//' \
-    -e 's/[[:blank:]]*$//' \
-    -e '/^$/ d' \
-    -e 's/.*color\([0-9]\{1,2\}\)[[:blank:]]*:[[:blank:]]*#\([[:xdigit:]]\{6\}$\)/\1:\2/p' \
-    -i "$xres_tmp"
+    # Replace include statements with file contents.
+    for i in "${includes[@]}"; do
+        # $i could be a relative path.
+        pi="$i"
+        [ -f "$pi" ] || pi="$(cd "$(dirname "$1")" && pwd)/$i"
+        # Use '_' as a delimiter since $i might include slashes.
+        sed -e '\_'"${inclPP}${i}${inclSP}"'_{
+            r '"$pi"'
+            d
+        }' -i "$xres_tmp"
+    done
+    unset i pi
 
-# We reverse the file before selecting unique color numbers, since a subsequent
-# color definition overrides a previous one.
-for i in $(tac "$xres_tmp" | sort -n -t: -u -k1,1); do
+    # TODO check for new includes.
+
+    # Remove comments, then trailing tabs and spaces, then empty lines and leave
+    # only color definitions in format n:x , n <- [0-9]{1,2}, x <- [[:xdigit:]]{6}.
+    sed -n \
+        -e 's/!.*//' \
+        -e 's/[[:blank:]]*$//' \
+        -e '/^$/ d' \
+        -e 's/'"$colorP"'/\1:\2/p' \
+        -i "$xres_tmp"
+
+    _IFS=$IFS; IFS=$'\n'
+    # We reverse the file before selecting unique color numbers, since a subsequent
+    # color definition overrides a previous one.
+    colors=($(tac "$xres_tmp" | sort -n -t: -u -k1,1))
+    IFS=$_IFS
+}
+# }}}
+
+if ! get_colors_xrdb; then
+    get_colors_manually ~/.Xresources
+fi
+
+unset colorP
+
+# Initialize terminal colors
+for i in "${colors[@]}"; do
     c=${i#*:}
     n=${i%:*}
     r="0x${c: :2}"
@@ -72,4 +102,7 @@ for i in $(tac "$xres_tmp" | sort -n -t: -u -k1,1); do
     fi
 done
 
-unset i c n r g b
+unset colors i c n r g b
+unset -f get_colors_xrdb get_colors_manually
+
+# vim: set fdm=marker:
