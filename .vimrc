@@ -282,7 +282,49 @@ let g:tagbar_autopreview = 1
 
 "CtrlP {{{
 
-"TODO customize.
+"Set the default opening command.
+let g:ctrlp_cmd = 'CtrlPMixed'
+
+"Set searching by filename (as opposed to full path) as the default (Toggle with
+"<c-d>).
+let g:ctrlp_by_filename = 1
+
+"Increase the maximum height of the match window and keep results = max. height.
+let g:ctrlp_match_window = 'max:15'
+
+"Put a new tab page after the last instead of after the current one.
+let g:ctrlp_tabpage_position = 'al'
+
+"Enable per-session caching when more than 250 entries.
+let g:ctrlp_use_caching = 251
+
+"Scan for hidden files and directories.
+let g:ctrlp_show_hidden = 1
+
+"Open newly created files in the current window when pressing <c-y>.
+let g:ctrlp_open_new_file = 'r'
+"Open all files as hidden buffers when opening multiple files (<c-z> and <c-o>).
+let g:ctrlp_open_multiple_files = 'i'
+"Prompt for an additional keypress for <c-o> and <c-y> to override the above
+"default behavior.
+let g:ctrlp_arg_map = 1
+
+"Follow symlinks but ignore looped internal symlinks to avoid duplicates.
+let g:ctrlp_follow_symlinks = 1
+
+"Number of MRU files to remember.
+let g:ctrlp_mruf_max = 25
+"Don't remember files matching the following pattern.
+let g:ctrlp_mruf_exclude = '/testdir/.*\|/.vim/.*/doc/.*'
+"Only show MRU files in the current working directory.
+let g:ctrlp_mruf_relative = 1
+"Toggle the above behavior with a key binding.
+let g:ctrlp_prompt_mappings = { 'ToggleMRURelative()': ['<F2>'] }
+"Don't sort when searching in MRU mode.
+let g:ctrlp_mruf_default_order = 1
+
+"Enable extenstions to show up in status bar.
+let g:ctrlp_extensions = ['mixed', 'bookmarkdir']
 
 "}}}
 
