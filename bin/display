@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1090
 
 __dir=$(dirname "${BASH_SOURCE[0]}")
 . "$__dir/../lib/error-utils.sh"
@@ -23,7 +24,7 @@ function usage {
 # $1 display to check
 function is_connected {
     [ -z "$1" ] && return 1
-    xrandr | grep -w $1 | grep -qw connected
+    xrandr | grep -w "$1" | grep -qw connected
 }
 
 # check if parameter given, before reading in displays
@@ -46,7 +47,7 @@ if ! is_connected $int; then
     choice=$?
 
     # get actual display name
-    int=$(echo ${connected[$choice]} | cut -d' ' -f1)
+    int=$(echo "${connected[$choice]}" | cut -d' ' -f1)
 fi
 
 # same for second display
@@ -59,22 +60,22 @@ if ! is_connected $ext; then
     read_choice "${connected[@]}"
     choice=$?
 
-    ext=$(echo ${connected[$choice]} | cut -d' ' -f1)
+    ext=$(echo "${connected[$choice]}" | cut -d' ' -f1)
 fi
 
 case $1 in
     intern)
-        xrandr --output $int --auto --output $ext --off && set_bg
+        xrandr --output "$int" --auto --output "$ext" --off && set_bg
         ;;
     extern)
-        xrandr --output $int --off --output $ext --auto && set_bg
+        xrandr --output "$int" --off --output "$ext" --auto && set_bg
         ;;
     clone)
         res=$(xrandr -q | awk '/^ *[0-9]*x[0-9]*/{ print $1 }' | sort -n | uniq -d | tail -1)
-        xrandr --output $int --mode $res --output $ext --same-as $int --mode $res && set_bg
+        xrandr --output "$int" --mode "$res" --output "$ext" --same-as "$int" --mode "$res" && set_bg
         ;;
     extend)
-        xrandr --output $int --auto --output $ext --auto --right-of $int && set_bg
+        xrandr --output "$int" --auto --output "$ext" --auto --right-of "$int" && set_bg
         ;;
     *)
         usage
