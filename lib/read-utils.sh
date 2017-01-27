@@ -1,12 +1,16 @@
+#!/bin/bash
+#
 # Collection of functions for reading user input
 
 __dir=$(dirname "${BASH_SOURCE[0]}")
 
 # Check dependencies
 if ! err_ > /dev/null 2>&1; then
+    # shellcheck source=/dev/null
     . "$__dir/error-utils.sh"
 fi
 if ! array_ > /dev/null 2>&1; then
+    # shellcheck source=/dev/null
     . "$__dir/array-utils.sh"
 fi
 
@@ -24,14 +28,14 @@ function read_confirm {
     else
         # We keep in mind that we can only retun values <= 255 anyway
         err_exit "Default choice must be 0 (yes) or 1 (no)" 1
-    fi  
+    fi
 
     while : ; do
-        read -p "$1 $suffix " yn
+        read -rp "$1 $suffix " yn
         case $yn in
-            [Yy]) return 0;; 
-            [Nn]) return 1;; 
-            *) return $2;;
+            [Yy]) return 0;;
+            [Nn]) return 1;;
+            *) return "$2";;
         esac
     done
 }
@@ -41,7 +45,7 @@ function read_confirm {
 # $3 action on confirm
 # $4 action on discard
 function read_confirm_do {
-    read_confirm "$1" $2 && $3 || $4
+    if read_confirm "$1" "$2"; then $3; else $4; fi
 }
 
 # Prints choices with index, reads user input and returns chosen index
@@ -51,9 +55,9 @@ function read_choice {
     array_print_indexed "${choices[@]}"
     local max_idx=$((${#choices[@]} - 1))
     while true; do
-        read -p "> " idx
+        read -rp "> " idx
         case $idx in
-            [0-$max_idx]) return $idx;;
+            [0-"$max_idx"]) return "$idx";;
             "") ;;
             *) err_print "Selection '$idx' does not exist.";;
         esac
