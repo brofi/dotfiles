@@ -19,9 +19,9 @@ function errexit {
 }
 
 function cleanup {
-    IFS=$'\n'
+    _IFS=$IFS; IFS=$'\n'
     dotsave_files=($(find $install_dir -xdev -name "*.$ext_bak"))
-    unset IFS
+    IFS=$_IFS
     for f in "${dotsave_files[@]}"; do
         rm "$f"
         echo "Deleted $f"
@@ -95,7 +95,7 @@ done
 # If clear switch set, remove backed up files
 [ "$do_clean" = true ] && cleanup && exit 0
 
-IFS=$'\n'
+_IFS=$IFS; IFS=$'\n'
 
 if df -t ntfs "$__dir" > /dev/null 2>&1; then
     leaf_dirs=($(get_leaf_dirs_ntfs))
@@ -106,7 +106,7 @@ fi
 # Get file names. Ignore this file, README.md, TODO and files in .git directory
 dotfiles=($(find $__dir -type f ! -name $__self ! -name README.md ! -name TODO -not -path "$__dir/.git/*"))
 
-unset IFS
+IFS=$_IFS
 
 echo 'Ensuring directory structure...'
 for d in "${leaf_dirs[@]}"; do
