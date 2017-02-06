@@ -28,6 +28,39 @@ function cleanup {
     done
 }
 
+function is_leaf_dir {
+    [ -z "$(find "$1" -maxdepth 1 ! -path "$1" -type d)" ]
+}
+export -f is_leaf_dir
+
+function get_leaf_dirs_ntfs {
+    find "$__dir" \
+        -not \( \
+            -path "$__dir/.git" \
+            -prune \
+        \) \
+        -type d \
+        \( \
+            -empty \
+            -o \
+            -exec sh -c 'is_leaf_dir "$1"' _ '{}' \; \
+        \) \
+        -print
+}
+
+# Get dirs without children (only links to parent and itself). Prune content of
+# .git directory and exclude .git itself. Otherwise it will be found if it has
+# no subdirectories.
+function get_leaf_dirs_unix {
+    find "$__dir" \
+        -not \( \
+            -path "$__dir/.git" \
+            -prune \
+        \) \
+        -type d \
+        -links 2
+}
+
 # Parse key value pairs
 while [ $# -gt 0 ]; do
     key="$1"
@@ -63,13 +96,16 @@ done
 [ "$do_clean" = true ] && cleanup && exit 0
 
 IFS=$'\n'
-# Get dirs without children (only links to parent and itself)
-# Prune content of .git directory and exclude .git itself
-# Otherwise it will be found if it has no subdirectories
-leaf_dirs=($(find $__dir -not \( -path "$__dir/.git" -prune \) -type d -links 2))
+
+if df -t ntfs "$__dir" > /dev/null 2>&1; then
+    leaf_dirs=($(get_leaf_dirs_ntfs))
+else
+    leaf_dirs=($(get_leaf_dirs_unix))
+fi
 
 # Get file names. Ignore this file, README.md, TODO and files in .git directory
 dotfiles=($(find $__dir -type f ! -name $__self ! -name README.md ! -name TODO -not -path "$__dir/.git/*"))
+
 unset IFS
 
 echo 'Ensuring directory structure...'
