@@ -15,12 +15,12 @@ install_dir=$HOME
 # $2 error msg
 function errexit {
     echo "Error: $2" 1>&2
-    exit $1
+    exit "$1"
 }
 
 function cleanup {
     _IFS=$IFS; IFS=$'\n'
-    dotsave_files=($(find $install_dir -xdev -name "*.$ext_bak"))
+    dotsave_files=($(find "$install_dir" -xdev -name "*.$ext_bak"))
     IFS=$_IFS
     for f in "${dotsave_files[@]}"; do
         rm "$f"
@@ -73,13 +73,13 @@ while [ $# -gt 0 ]; do
             ;;
         --owner)
             owner="$2"
-            getent passwd $owner > /dev/null \
+            getent passwd "$owner" > /dev/null \
                 || errexit $? "user '$owner' does not exist!"
             shift
             ;;
         --group)
             group="$2"
-            getent group $group > /dev/null \
+            getent group "$group" > /dev/null \
                 || errexit $? "group '$group' does not exist!"
             shift
             ;;
@@ -104,7 +104,7 @@ else
 fi
 
 # Get file names. Ignore this file, README.md, TODO and files in .git directory
-dotfiles=($(find $__dir -type f ! -name $__self ! -name README.md ! -name TODO -not -path "$__dir/.git/*"))
+dotfiles=($(find "$__dir" -type f ! -name "$__self" ! -name README.md ! -name TODO -not -path "$__dir/.git/*"))
 
 IFS=$_IFS
 
@@ -117,7 +117,7 @@ for d in "${leaf_dirs[@]}"; do
         # 'owner:' sets owner and login group, so:
         owned=$owner; [ -z "$group" ] || owned+=:$group
         while true; do
-            chown $owned "$name"
+            chown "$owned" "$name"
             name=$(dirname "$name")
             [ "$name" != "$install_dir" ] || break
         done
@@ -138,6 +138,6 @@ for f in "${dotfiles[@]}"; do
     fi
     ln -sv "$f" "$name"
     # Fix permission on link (don't dereference)
-    [ -z "$owner" ] || chown -h $owner "$name"
-    [ -z "$group" ] || chgrp -h $group "$name"
+    [ -z "$owner" ] || chown -h "$owner" "$name"
+    [ -z "$group" ] || chgrp -h "$group" "$name"
 done
