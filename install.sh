@@ -23,8 +23,12 @@ function cleanup {
     dotsave_files=($(find "$install_dir" -xdev -name "*.$ext_bak"))
     IFS=$_IFS
     for f in "${dotsave_files[@]}"; do
-        rm "$f"
-        echo "Deleted $f"
+        if [ "${f##*.}" = "$ext_bak" ]; then
+            rm "$f"
+            echo "Deleted $f"
+        else
+            errexit 1 "'$f' is not a $ext_bak file!"
+        fi
     done
 }
 
