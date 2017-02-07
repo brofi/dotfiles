@@ -1,0 +1,23 @@
+# Looks
+ThemeFile=gruvbox-dark
+Transparency=low
+OpaqueWhenFocused=yes
+CursorType=block
+
+# Text
+Font=Liberation Mono
+FontHeight=10
+BoldAsFont=yes
+AllowBlinking=yes
+Locale=en_US
+Charset=UTF-8
+
+# Window
+Columns=140
+Rows=40
+Scrollbar=none
+Language=en_US
+
+# Terminal
+Term=xterm-256color
+BellType=0
