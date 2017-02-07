@@ -76,4 +76,12 @@ cssip() {
          "password $pw"
 }
 
+mintty_cfromhex() {
+    if [ "$#" -eq 0 ] || [ "${#1}" -lt 6 ]; then
+        return 1
+    fi
+    local c=${1#\#}
+    printf '%d,%d,%d' "0x${c: :2}" "0x${c:2:2}" "0x${c: -2}"
+}
+
 # vim: set ft=sh fdm=marker:
