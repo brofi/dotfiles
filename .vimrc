@@ -62,6 +62,42 @@ set laststatus=2
 "Don't show mode, since airline already shows it.
 set noshowmode
 
+"GUI Options {{{
+
+if has('gui_running')
+    if has('gui_win32')
+        "Windows specific options.
+        set guifont=Consolas:h10:cANSI:qDRAFT
+    elseif has ('gui_gtk')
+        "Linux GUI specific options.
+    endif
+    "GUI window size.
+    set lines=40
+    set columns=140
+    "Disable menu bar.
+    set guioptions-=m
+    "Disable toolbar.
+    set guioptions-=T
+    "Disable right-hand scrollbar.
+    set guioptions-=r
+    "Disable right-hand scrollbar when vertical split (no default).
+    set guioptions-=R
+    "Disable left-hand scrollbar (no default).
+    set guioptions-=l
+    "Disable left-hand scrollbar when vertical split.
+    set guioptions-=L
+    "Disable bottom (horizontal) scrollbar (no default)
+    set guioptions-=b
+    "Console dialogs instead of popup dialogs for simple choices.
+    set guioptions+=c
+    "Flash screen instead of sounding a beep, but unset the code that will cause
+    "the screen to flash (disables bells completely). Has to be done after the
+    "GUI has started.
+    autocmd GUIEnter * set visualbell t_vb=
+endif
+
+"}}}
+
 "Commands {{{
 
 "We add a '!' to overwrite command. Necessary e.g. when reloading vimrc with
