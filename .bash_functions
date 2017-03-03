@@ -56,7 +56,7 @@ cfromhex() {
 # Disown given command. Don't log it's output.
 fu() {
     command -v "$1" > /dev/null || return 1
-    nohup "$1" > /dev/null 2>&1 &
+    nohup "$@" > /dev/null 2>&1 &
 }
 
 # Exchange the names of two given files.
