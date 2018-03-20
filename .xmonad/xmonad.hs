@@ -317,8 +317,9 @@ xmobarCommands =
                , "--idle-icon-pattern", xmobarIcon "bat_off_%%.xpm" ]
 
 -- | Ordered list of Xmobar plugins.
-xmobarTemplate :: [String]
-xmobarTemplate = ["dynnetwork", "cpu", "memory", xmobarWeatherStationId, "date", "uptime", "default:Master", "battery"]
+xmobarTemplate :: IO [String]
+xmobarTemplate = isLaptop >>= return . (\x -> if x then templ ++ ["battery"] else templ)
+  where templ = ["cpu", "memory", "dynnetwork", xmobarWeatherStationId, "date", "uptime", "default:Master"]
 
 -- | Seperator used between Xmobar plugin templates.
 xmobarTemplateSep :: String
@@ -334,23 +335,25 @@ xmobarTemplateSep = "  "
 
 -- | Xmobar with command line options.
 xmobar' :: LayoutClass l Window => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
-xmobar' conf = statusBar ("xmobar ~/.xmobar/xmobarrc " ++ flags) xmobarFocusedPP toggleStrutsKey conf
+xmobar' conf = cmd >>= (\c -> statusBar c xmobarFocusedPP toggleStrutsKey conf)
   where
+    cmd    = flags >>= return . ("xmobar ~/.xmobar/xmobarrc " ++)
     pos    = "Top"
     asep   = "}{"
     sep    = "%"
     templL = pad' sep "StdinReader"
-    templR = intercalate xmobarTemplateSep $ map (pad' sep) xmobarTemplate
-    flags  = "-f 'xft:" ++ xftFont
-             ++ "' -B '" ++ bg
-             ++ "' -F '" ++ fg
-             ++ "' -p '" ++ pos
-             ++ "' -a '" ++ asep
-             ++ "' -s '" ++ sep
-             ++ "' -i '" ++ iconRoot
-             ++ "' -t '" ++ pad (templL ++ asep ++ templR)
-             ++ "' -c '" ++ listString ("Run StdinReader" : xmobarCommands)
-             ++ "' -d" -- same as overrideRedirect = False
+    templR = xmobarTemplate >>= return . intercalate xmobarTemplateSep . map (pad' sep)
+    flags  = templR >>= return . (\tr ->
+               "-f 'xft:" ++ xftFont
+               ++ "' -B '" ++ bg
+               ++ "' -F '" ++ fg
+               ++ "' -p '" ++ pos
+               ++ "' -a '" ++ asep
+               ++ "' -s '" ++ sep
+               ++ "' -i '" ++ iconRoot
+               ++ "' -t '" ++ pad (templL ++ asep ++ tr)
+               ++ "' -c '" ++ listString ("Run StdinReader" : xmobarCommands)
+               ++ "' -d") -- same as overrideRedirect = False
 
 -- | Custom pretty printing options for xmobar on focused screen.
 xmobarFocusedPP :: PP
@@ -568,6 +571,13 @@ wrap' "[" "]" "myString" -> "[myString]" (same as 'wrap')@
 -}
 wrap' :: String -> String -> String -> String
 wrap' l r w = l ++ w ++ r
+
+{- | @True@ if the computer chassis value is 8 (Portable), 9 (Laptop),
+10 (Notebook) or 14 (Sub Notebook).
+-}
+isLaptop :: IO Bool
+isLaptop = readFile "/sys/class/dmi/id/chassis_type" >>=
+  return . (`elem` ["8", "9", "10", "14"]) . head . lines
 
 {- | Run haddock on xmonad.hs and the output in a \"doc\" folder next to it.
 
