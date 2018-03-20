@@ -192,7 +192,7 @@ eventHook' = fullscreenEventHook
 
 -- | Directory used for haddock output.
 haddockDir :: MonadIO m => m String
-haddockDir = liftM (++ "/doc") getXMonadDir
+haddockDir = (++ "/doc") <$> getXMonadDir
 
 -- | Icon root directory used for status bars.
 iconRoot :: String
@@ -318,7 +318,7 @@ xmobarCommands =
 
 -- | Ordered list of Xmobar plugins.
 xmobarTemplate :: IO [String]
-xmobarTemplate = isLaptop >>= return . (\x -> if x then templ ++ ["battery"] else templ)
+xmobarTemplate = (\x -> if x then templ ++ ["battery"] else templ) <$> isLaptop
   where templ = ["cpu", "memory", "dynnetwork", xmobarWeatherStationId, "date", "uptime", "default:Master"]
 
 -- | Seperator used between Xmobar plugin templates.
@@ -337,13 +337,13 @@ xmobarTemplateSep = "  "
 xmobar' :: LayoutClass l Window => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
 xmobar' conf = cmd >>= (\c -> statusBar c xmobarFocusedPP toggleStrutsKey conf)
   where
-    cmd    = flags >>= return . ("xmobar ~/.xmobar/xmobarrc " ++)
+    cmd    = ("xmobar ~/.xmobar/xmobarrc " ++) <$> flags
     pos    = "Top"
     asep   = "}{"
     sep    = "%"
     templL = pad' sep "StdinReader"
-    templR = xmobarTemplate >>= return . intercalate xmobarTemplateSep . map (pad' sep)
-    flags  = templR >>= return . (\tr ->
+    templR = intercalate xmobarTemplateSep . map (pad' sep) <$> xmobarTemplate
+    flags  = (\tr ->
                "-f 'xft:" ++ xftFont
                ++ "' -B '" ++ bg
                ++ "' -F '" ++ fg
@@ -353,7 +353,8 @@ xmobar' conf = cmd >>= (\c -> statusBar c xmobarFocusedPP toggleStrutsKey conf)
                ++ "' -i '" ++ iconRoot
                ++ "' -t '" ++ pad (templL ++ asep ++ tr)
                ++ "' -c '" ++ listString ("Run StdinReader" : xmobarCommands)
-               ++ "' -d") -- same as overrideRedirect = False
+               ++ "' -d" -- same as overrideRedirect = False
+               ) <$> templR
 
 -- | Custom pretty printing options for xmobar on focused screen.
 xmobarFocusedPP :: PP
@@ -365,7 +366,7 @@ xmobarUnfocusedPP = xmobarFocusedPP { ppTitle = const "" }
 
 -- | Dzen with command line options.
 dzen' :: LayoutClass l Window => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
-dzen' conf = statusBar ("dzen2 " ++ flags) dzenFocusedPP toggleStrutsKey conf
+dzen' = statusBar ("dzen2 " ++ flags) dzenFocusedPP toggleStrutsKey
   where
     height = 20
     align  = "left"
@@ -444,7 +445,7 @@ config' = ewmh def
     , workspaces         = workspaces'
     , normalBorderColor  = normalBorderColor'
     , focusedBorderColor = focusedBorderColor'
-    , keys               = \x -> M.union (M.fromList keys') (keys def x)
+    , keys               = M.union (M.fromList keys') . keys def
     , layoutHook         = layout'
     , manageHook         = manageHook'
     , handleEventHook    = eventHook'
@@ -470,7 +471,7 @@ main :: IO ()
 main = do
     -- Create doc directory for haddock if missing
     createDirectoryIfMissing False =<< haddockDir
-    spawn(trayer)
+    spawn trayer
     xmonad =<< xmobar' config'
 
 {- | Xmobar icon string with given icon name.
@@ -537,7 +538,7 @@ dzenEvents = intercalate ";" . map (\(e, as) -> e ++ "=" ++ actions as)
              -- no event without action
              . filter (\(_, as) -> (not . null) as)
   where actions = intercalate "," . map (\(a, os) ->
-                    if null os then a else (a ++ ":" ++ intercalate ":" os))
+                    if null os then a else a ++ ":" ++ intercalate ":" os)
 
 {- | List of 'String' as 'String'.
 
@@ -576,8 +577,8 @@ wrap' l r w = l ++ w ++ r
 10 (Notebook) or 14 (Sub Notebook).
 -}
 isLaptop :: IO Bool
-isLaptop = readFile "/sys/class/dmi/id/chassis_type" >>=
-  return . (`elem` ["8", "9", "10", "14"]) . head . lines
+isLaptop = (`elem` ["8", "9", "10", "14"]) . head . lines
+    <$> readFile "/sys/class/dmi/id/chassis_type"
 
 {- | Run haddock on xmonad.hs and the output in a \"doc\" folder next to it.
 
@@ -587,7 +588,7 @@ runHaddock :: MonadIO m => m ()
 runHaddock = do
     d <- haddockDir
     c <- getXMonadDir
-    i <- io $ (concatMap (\(u,i) -> " -i " ++ u ++ "," ++ i) . iHaddock) <$> basePkg
+    i <- io $ concatMap (\(u,i) -> " -i " ++ u ++ "," ++ i) . iHaddock <$> basePkg
     spawn ("haddock" ++ o ++ i ++ " -o " ++ d ++ " " ++ c ++ "/xmonad.hs " ++ c ++ "/lib/*.hs")
       where
         o = " -h --pretty-html --hyperlinked-source --no-print-missing-docs"
@@ -610,7 +611,7 @@ Example:
 
 -}
 basePkg :: IO String
-basePkg = (head . lines) <$> readProcess "ghc-pkg" ["--simple-output", "list", "base"] []
+basePkg = head . lines <$> readProcess "ghc-pkg" ["--simple-output", "list", "base"] []
 
 -- | Recompiles and restarts xmonad.
 rr :: MonadIO m => m ()
