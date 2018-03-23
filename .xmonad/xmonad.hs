@@ -76,6 +76,10 @@ focusedBorderColor' = blue
 spacing' :: Int
 spacing' = 5
 
+-- | Background color.
+bg :: C.Color
+bg = bg0 Hard
+
 -- Minimized windows aren't skipped when changing focus.
 -- "XMonad.Layout.BoringWindows" could help with that, but there's a
 -- <https://mail.haskell.org/pipermail/xmonad/2009-December/009403.html bug>
@@ -161,7 +165,7 @@ tabTheme = def
     , inactiveBorderColor = bg
     , urgentBorderColor   = bg
     , activeTextColor     = blue
-    , inactiveTextColor   = fg
+    , inactiveTextColor   = fg0
     , urgentTextColor     = red
     , fontName            = "xft:" ++ xftFont
     , decoWidth           = 200
@@ -200,7 +204,7 @@ iconRoot = ".xmobar/icons"
 
 -- | dmenu with command line options.
 dmenu :: String
-dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg
+dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg0
         ++ "' -sf '" ++ blue ++ "' -sb '" ++ bg
         ++ "' -p '>' -fn '" ++ xftFont ++ "'"
 
@@ -232,7 +236,7 @@ trayer = "trayer"
 An Xft <https://keithp.com/~keithp/render/Xft.tutorial Tutorial>.
 -}
 xftFont :: String
-xftFont = "Inconsolata:size=11:antialias=true"
+xftFont = "Inconsolata:size=12:antialias=true"
 
 -- | Bold version of 'xftFont'.
 xftFontBold :: String
@@ -243,16 +247,16 @@ defaultPP' :: (String -> String -> String -> String) -- ^ color format function
            -> (String -> String) -- ^ icon format function
            -> PP
 defaultPP' c i = def
-    { ppCurrent         = c blue "" . wrap' "[" "]"
-    , ppVisible         = wrap' "(" ")"
-    , ppHidden          = id
+    { ppCurrent         = c bg fg4 . pad
+    , ppVisible         = c fg4 bg2 . pad
+    , ppHidden          = c bg4 bg1 . pad
     , ppHiddenNoWindows = const ""
-    , ppUrgent          = c red ""
+    , ppUrgent          = c bg red . pad
     , ppSep             = " "
-    , ppWsSep           = " "
-    , ppTitle           = (c orange "" ">>= " ++) . c blue "" . shorten 50
+    , ppWsSep           = ""
+    , ppTitle           = (c orange "" ">>= " ++) . c fg0 "" . shorten 50
     , ppLayout          = ppLayout' i
-    , ppOrder           = \(ws:l:t:e) -> [l,ws,t] ++ e
+    , ppOrder           = id
     , ppSort            = getSortByIndex
     , ppExtras          = []
     }
@@ -280,37 +284,44 @@ xmobarCommands =
     , "Run DynNetwork " ++ xmobarArgs netArgs ++ " 3"
     , "Run Cpu " ++ xmobarArgs cpuArgs ++ " 5"
     , "Run Memory " ++ xmobarArgs memArgs ++ " 5"
-    , "Run Date " ++ (quote . xmobarColor blue "") "%a %b %_d %l:%M" ++ " " ++ quote "date" ++ " 10"
+    , "Run Date " ++ (quote . xmobarColor yellow "") "%b %_d %l:%M" ++ " " ++ quote "date" ++ " 10"
     , "Run Uptime " ++ xmobarArgs upArgs ++ " 300"
     , "Run Volume " ++ quote "default" ++ " " ++ quote "Master" ++ " " ++ xmobarArgs volArgs ++ " 5"
     , "Run BatteryP " ++ xmobarArgs ["BAT0"] ++ " " ++ xmobarArgs batArgs ++ " 15" ]
   where
-    wthrArgs = [ "-t", "<tempC>C"
+    wthrArgs = [ "-t", "<tempC>\\176C"
                , "-L", "18", "-H", "25"
                , "-l", blue, "-n", green, "-h", red ]
-    netArgs  = [ "-t", "<rxipat> <rx>"
+    netArgs  = [ "-t", "<rx> <rxipat>"
                , "-L", "500000", "-H", "1500000"
                , "-n", green, "-h", red
+               , "-m", "6"
                , "-S", "True"
                , "--"
                , "--rx-icon-pattern", xmobarIcon "net_%%.xpm" ]
-    cpuArgs  = [ "-t", "<ipat> <total>%"
+    cpuArgs  = [ "-t", "<total> <ipat>"
                , "-L", "3", "-H", "50"
                , "-n", green, "-h", red
+               , "-p", "3"
+               , "-S", "True"
                , "--"
                , "--load-icon-pattern", xmobarIcon "cpu_%%.xpm" ]
-    memArgs  = [ "-t", "<usedipat> <usedratio>%"
+    memArgs  = [ "-t", "<usedratio> <usedipat>"
+               , "-p", "3"
+               , "-S", "True"
                , "--"
                , "--used-icon-pattern", xmobarIcon "mem_%%.xpm" ]
-    upArgs   = [ "-t", "up <hours> <minutes>"
-               , "-S", "True" ]
-    volArgs  = [ "-t", "<volumeipat> <volume>%<status>"
+    upArgs   = [ "-t", "up <hours>:<minutes>" ]
+    volArgs  = [ "-t", "<volume><status> <volumeipat>"
+               , "-p", "3"
+               , "-S", "True"
                , "--"
                , "-O", "", "-o", " [off]", "-c", red
                , "--volume-icon-pattern", xmobarIcon "vol_%%.xpm" ]
-    batArgs  = [ "-t", "<leftipat> <left>%"
+    batArgs  = [ "-t", "<left>% <leftipat>"
                , "-L", "15", "-H", "50"
                , "-l", red, "-h", green
+               , "-p", "3"
                , "--"
                , "--off-icon-pattern", xmobarIcon "bat_off_%%.xpm"
                , "--on-icon-pattern", xmobarIcon "bat_on_%%.xpm"
@@ -323,7 +334,7 @@ xmobarTemplate = (\x -> if x then templ ++ ["battery"] else templ) <$> isLaptop
 
 -- | Seperator used between Xmobar plugin templates.
 xmobarTemplateSep :: String
-xmobarTemplateSep = "  "
+xmobarTemplateSep = " "
 
 -- TODO xmobar on multiple screens
 -- solution1: write own statusBar function which can spawn multiple status bars
@@ -346,12 +357,12 @@ xmobar' conf = cmd >>= (\c -> statusBar c xmobarFocusedPP toggleStrutsKey conf)
     flags  = (\tr ->
                "-f 'xft:" ++ xftFont
                ++ "' -B '" ++ bg
-               ++ "' -F '" ++ fg
+               ++ "' -F '" ++ fg0
                ++ "' -p '" ++ pos
                ++ "' -a '" ++ asep
                ++ "' -s '" ++ sep
                ++ "' -i '" ++ iconRoot
-               ++ "' -t '" ++ pad (templL ++ asep ++ tr)
+               ++ "' -t '" ++ templL ++ asep ++ tr ++ " "
                ++ "' -c '" ++ listString ("Run StdinReader" : xmobarCommands)
                ++ "' -d" -- same as overrideRedirect = False
                ) <$> templR
@@ -373,7 +384,7 @@ dzen' = statusBar ("dzen2 " ++ flags) dzenFocusedPP toggleStrutsKey
     events = [ ("onstart", [("lower", [])]) ]
     flags  = "-fn '" ++ xftFont
             ++ "' -bg '" ++ bg
-            ++ "' -fg '" ++ fg
+            ++ "' -fg '" ++ fg0
             ++ "' -h '"  ++ show height
             ++ "' -ta '" ++ align
             ++ "' -e '"  ++ dzenEvents events
