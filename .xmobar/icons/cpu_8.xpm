@@ -2,8 +2,8 @@
 static char * cpu_8_xpm[] = {
 "18 18 3 1",
 " 	c None",
-".	c #FF005B",
-"+	c #FFFFFF",
+".	c #fb4934",
+"+	c #fbf1c7",
 "                  ",
 "                  ",
 "     . . . . .    ",
