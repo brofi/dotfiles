@@ -1,34 +1,26 @@
 #!/bin/bash
 # updates android sdk permission after updating
 
+__dir=$(dirname "${BASH_SOURCE[0]}")
+
+# shellcheck source=../lib/error-utils.sh
+. "$__dir/../lib/error-utils.sh"
+# shellcheck source=../lib/linux-utils.sh
+. "$__dir/../lib/linux-utils.sh"
+
 grp=sdkusers
 loc=/opt/android-sdk
 
-function is_root {
-    [ $EUID -eq 0 ]
-}
-
-function is_sudoer {
-    id -nG $EUID | grep -Eqw 'sudo|wheel'
-}
-
-function error {
-    echo "$1" 1>&2
-}
-
-if ! getent group $grp > /dev/null; then
-    error "Group '$grp' not found"
-    exit 1
+if ! linux_is_group $grp > /dev/null; then
+    err_exit "Group '$grp' not found" 1
 fi
 
 if ! [ -d "$loc" ]; then
-    error "'$loc' is not a directory"
-    exit 1
+    err_exit "'$loc' is not a directory" 1
 fi
 
-if ! is_root && ! is_sudoer; then
-    error "Script must be run with root permission"
-    exit 1
+if ! linux_is_root && ! linux_is_sudoer; then
+    err_exit "Script must be run with root permission" 1
 fi
 
 sudo echo "Setting permission for $grp on ${loc}..."
