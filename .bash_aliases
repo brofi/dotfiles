@@ -50,9 +50,16 @@ alias h='history'
 # alias adbtop='adb shell top -m 5 -d 1 -n 1'
 alias adbtop='adb shell top -d 1'
 # Shows volume in % (like alsamixer would show it).
-alias vol="amixer sget -M Master | grep -om1 '[0-9]\{1,3\}%'"
+alias vol="amixer sget -M Master | grep -om1 '[0-9]\\{1,3\\}%'"
 # Generates package metadata in current directory.
 alias srcinfo='makepkg --printsrcinfo > .SRCINFO'
+# Filter xev for keycodes only.
+alias xkeycodes="xev | grep -A2 --line-buffered '^KeyRelease' \
+    | sed -n '/keycode /s/^.*keycode \\([0-9]*\\).* (.*, \\(.*\\)).*$/\\1 \\2/p'"
+# Play random video from /media/videos wit VLC.
+alias vlcrand="fu vlc --media-library /media/videos --random --no-audio \
+    --no-sub-autodetect-file --no-osd --no-spu --no-video-title-show \
+    --no-overlay --no-video-deco"
 
 ### Safety last
 alias rm='rm -i'

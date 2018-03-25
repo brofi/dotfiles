@@ -1,3 +1,0 @@
-#!/bin/bash
-
-vlc --media-library "/media/videos" --random --no-audio --no-sub-autodetect-file --no-osd --no-spu --no-video-title-show --no-overlay --no-video-deco &
