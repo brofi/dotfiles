@@ -115,6 +115,17 @@ exec 'Nonu'
 
 "Plugins {{{
 
+" Automatically install plugins.
+if has('win32')
+    if !empty(glob('~\vimfiles\autoload\plug.vim')) && !isdirectory(glob('~\vimfiles\plugged'))
+        autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+    endif
+elseif empty(glob('~/.vim/autoload/plug.vim'))
+    silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
 "Automatically calls:
 "
 " * syntax enable:
