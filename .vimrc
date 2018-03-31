@@ -388,7 +388,12 @@ let g:gruvbox_contrast_dark = 'hard'
 "}}}
 
 
-"Load gruvbox color scheme.
-colorscheme gruvbox
+"Load gruvbox color scheme, if already installed.
+try
+    colorscheme gruvbox
+catch /E185/
+    " Don't show "E185: Cannot find color scheme 'gruvbox'" on fresh
+    " installations. Vim-Plug and plugin installation is done above.
+endtry
 
 " vim: set fdm=marker:
