@@ -1,6 +1,18 @@
 Xcursor.theme: Simple-and-Soft
 #include ".colors/gruvbox-dark"
 
+
+! For applications ignoring fontconfig settings
+Xft.antialias: 1
+Xft.autohint: 0
+Xft.hinting: 1
+Xft.hintstyle: hintslight
+Xft.lcdfilter: lcddefault
+Xft.rgba: rgb
+! Should be detected correctly (except on VM)
+! Check with 'xdpyinfo | grep -B2 resolution'
+Xft.dpi: 92
+
 ! move-by-word-keys
 URxvt.keysym.C-Left: \033[1;5D
 URxvt.keysym.C-Right: \033[1;5C
