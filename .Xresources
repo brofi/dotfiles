@@ -50,9 +50,6 @@ URxvt.url-launcher: /usr/bin/xdg-open
 URxvt.matcher.button: 1
 URxvt.matcher.rend.0: Bold fg8
 
-!*background:              [80]#000000
-!*foreground:              #ffffff
-
 !! URxvt
 
 URxvt*letterSpace: -1
@@ -200,9 +197,11 @@ URxvt*scrollBar: false
 
 ! Internal border of number pixels. This resource is limited to 100; option -b.
 ! URxvt*internalBorder: number
+URxvt*internalBorder: 5
 
 ! External border of number pixels. This resource is limited to 100; option -w, -bw, -borderwidth.
 ! URxvt*externalBorder: number
+URxvt*externalBorder: 0
 
 ! Set MWM hints to request a borderless window, i.e. if honoured by the WM, the rxvt-unicode window will not have window decorations; option -bl.
 ! URxvt*borderLess: boolean
@@ -285,6 +284,7 @@ URxvt*cursorBlink: true
 
 ! Turn on/off secondary screen scroll (default enabled). If this option is enabled, scrolls on the secondary screen will change the scrollback buffer and, when secondaryScreen is off, switching
 ! URxvt*secondaryScroll: boolean
+URxvt*secondaryScroll: false
 
 ! Turn on/off hold window after exit support. If enabled, urxvt will not immediately destroy its window when the program executed within it exits. Instead, it will wait till it is being killed
 ! URxvt*hold: boolean
