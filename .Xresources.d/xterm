@@ -1,0 +1,10 @@
+!! XTerm resources
+
+XTerm*metaSendsEscape: true
+
+! copy-and-paste-keys
+XTerm*translations: #override \n\
+    Ctrl Alt <Key>C: copy-selection(CLIPBOARD) \n\
+    Ctrl Alt <Key>V: insert-selection(CLIPBOARD)
+
+! vim: set ft=xdefaults:
