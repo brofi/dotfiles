@@ -194,6 +194,14 @@ the @_NET_WM_STATE@ protocol\".
 eventHook' :: Event -> X All
 eventHook' = fullscreenEventHook
 
+{- | Custom 'startupHook'.
+
+Combine actions with '<+>'.
+-}
+startupHook' :: X()
+startupHook' = (haddockDir >>= io . createDirectoryIfMissing False)
+               <+> spawn ("sleep 1 && " ++ trayer)
+
 -- | Directory used for haddock output.
 haddockDir :: MonadIO m => m String
 haddockDir = (++ "/doc") <$> getXMonadDir
@@ -460,6 +468,7 @@ config' = ewmh def
     , layoutHook         = layout'
     , manageHook         = manageHook'
     , handleEventHook    = eventHook'
+    , startupHook        = startupHook'
     }
 
 {- | Main entry point.
@@ -479,11 +488,7 @@ taken care of:
 via 'XMonad.Hooks.ManageDocks.docks' config modifier.
 -}
 main :: IO ()
-main = do
-    -- Create doc directory for haddock if missing
-    createDirectoryIfMissing False =<< haddockDir
-    spawn trayer
-    xmonad =<< xmobar' config'
+main = xmonad =<< xmobar' config'
 
 {- | Xmobar icon string with given icon name.
 
