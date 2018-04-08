@@ -201,9 +201,14 @@ Combine actions with '<+>'.
 -}
 startupHook' :: X()
 startupHook' = (haddockDir >>= io . createDirectoryIfMissing False)
+               <+> io writeTrayerCmd
                <+> io writeDzenCmd
                <+> io writeXmobarCmd
-               <+> spawn ("sleep 1 && " ++ trayer)
+               <+> spawn ("sleep 1 && " ++ trayerCmd)
+
+-- | Write trayer command line string to file for debugging purposes.
+writeTrayerCmd :: IO()
+writeTrayerCmd = getXMonadDir >>= (\d -> writeFile (d ++ "/.trayerCmd") trayerCmd)
 
 -- | Write dzen command line string to file for debugging purposes.
 writeDzenCmd :: IO()
@@ -232,9 +237,9 @@ dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg0
 
 -- TODO calc margin
 -- TODO height = statusBarHeight - distance
--- | trayer with command line options.
-trayer :: String
-trayer = "trayer"
+-- | trayer command line string.
+trayerCmd :: String
+trayerCmd = "trayer"
          ++ " --SetDockType true"
          ++ " --edge top"
          ++ " --height 19"
