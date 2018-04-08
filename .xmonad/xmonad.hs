@@ -70,7 +70,7 @@ modMask' = mod4Mask
 -- | Xmonad border colors.
 normalBorderColor', focusedBorderColor' :: C.Color
 normalBorderColor'  = bg
-focusedBorderColor' = blue
+focusedBorderColor' = yellow
 
 -- | Space around windows.
 spacing' :: Int
@@ -226,7 +226,7 @@ iconRoot = ".xmobar/icons"
 -- | dmenu with command line options.
 dmenu :: String
 dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg0
-        ++ "' -sf '" ++ blue ++ "' -sb '" ++ bg
+        ++ "' -sf '" ++ yellow ++ "' -sb '" ++ bg
         ++ "' -p '>' -fn '" ++ xftFont ++ "'"
 
 -- TODO calc margin
