@@ -200,7 +200,20 @@ Combine actions with '<+>'.
 -}
 startupHook' :: X()
 startupHook' = (haddockDir >>= io . createDirectoryIfMissing False)
+               <+> io writeDzenCmd
+               <+> io writeXmobarCmd
                <+> spawn ("sleep 1 && " ++ trayer)
+
+-- | Write dzen command line string to file for debugging purposes.
+writeDzenCmd :: IO()
+writeDzenCmd = getXMonadDir >>= (\d -> writeFile (d ++ "/.dzenCmd") dzenCmd)
+
+-- | Write xmobar command line string to file for debugging purposes.
+writeXmobarCmd :: IO()
+writeXmobarCmd = do
+    d <- getXMonadDir
+    cmd <- xmobarCmd
+    writeFile (d ++ "/.xmobarCmd") cmd
 
 -- | Directory used for haddock output.
 haddockDir :: MonadIO m => m String
@@ -354,9 +367,12 @@ xmobarTemplateSep = " "
 
 -- | Xmobar with command line options.
 xmobar' :: LayoutClass l Window => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
-xmobar' conf = cmd >>= (\c -> statusBar c xmobarFocusedPP toggleStrutsKey conf)
+xmobar' conf = xmobarCmd >>= (\c -> statusBar c xmobarFocusedPP toggleStrutsKey conf)
+
+-- | Xmobar command line string.
+xmobarCmd :: IO String
+xmobarCmd = ("xmobar ~/.xmobar/xmobarrc " ++) <$> flags
   where
-    cmd    = ("xmobar ~/.xmobar/xmobarrc " ++) <$> flags
     pos    = "Top"
     asep   = "}{"
     sep    = "%"
@@ -385,7 +401,11 @@ xmobarUnfocusedPP = xmobarFocusedPP { ppTitle = const "" }
 
 -- | Dzen with command line options.
 dzen' :: LayoutClass l Window => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
-dzen' = statusBar ("dzen2 " ++ flags) dzenFocusedPP toggleStrutsKey
+dzen' = statusBar dzenCmd dzenFocusedPP toggleStrutsKey
+
+-- | Dzen command line string.
+dzenCmd :: String
+dzenCmd = "dzen2 " ++ flags
   where
     height = 20
     align  = "left"
