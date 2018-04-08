@@ -181,8 +181,9 @@ manageHook' :: ManageHook
 manageHook' = composeAll
                 [ className =? "Skype"        --> doShift "5"
                 , className =? "Pidgin"       --> doShift "5"
-                , className =? "Steam"        --> doShift "5"
-                , className =? "csgo_linux64" --> doShift "8" ]
+                , className =? "Steam"        --> doShift "8"
+                , className =? "Steam"        --> doFloat
+                , className =? "csgo_linux64" --> doShift "9" ]
 
 {- | Custom 'handleEventHook'.
 
