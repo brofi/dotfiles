@@ -2,7 +2,7 @@
 auto_save_setup=false
 use_internal_view=false
 use_internal_edit=false
-skin=/home/andy/.config/mc/skins/gruvbox.ini
+skin=gruvbox
 
 [Layout]
 menubar_visible=0
