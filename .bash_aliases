@@ -19,20 +19,27 @@ alias ltop='du -sh * | sort -rh | head -10'
 alias lsw="watch -n 0.5 -c 'tree -a'"
 
 ### Pacman
-### TODO command line completion
-## Sync
-alias S='sudo pacman -S'
-alias Sy='S -y'
-alias Syy='Sy -y'
-alias Su='S -u'
-alias Syu='Sy -u'
-alias Syyu='Syy -u'
-## Query
-alias Qnn='pacman -Qdtq'
-## Remove
-alias R='sudo pacman -R'
-alias Rs='R -s'
-alias Rnn='Rs $(Qnn)'
+# 'Expand when defined, not when used' is intended.
+# shellcheck disable=SC2139
+if command -v pacman > /dev/null; then
+    # We need the full command for completion (no alias within alias)
+    p="pacman"
+    sp="sudo $p"
+    ## Sync
+    alias S="$sp -S"
+    alias Sy="$sp -Sy"
+    alias Syy="$sp -Syy"
+    alias Su="$sp -Su"
+    alias Syu="$sp -Syu"
+    alias Syyu="$sp -Syyu"
+    ## Query
+    alias Qnn="$p -Qdtq"
+    ## Remove
+    alias R="$sp -R"
+    alias Rs="$sp -Rs"
+    alias Rnn="$sp -Rs \$($p -Qdtq)"
+    unset p sp
+fi
 
 ### Web
 alias awiki="xdg-open 'https://wiki.archlinux.org'"
