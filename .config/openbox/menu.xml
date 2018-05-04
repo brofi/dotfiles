@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<openbox_menu xmlns="http://openbox.org/3.4/menu">
+
+    <menu id="apps-net-menu" label="Internet">
+        <item label="Chrome">
+            <action name="Execute">
+                <command>google-chrome-stable</command>
+                <startupnotify>
+                    <enabled>yes</enabled>
+                </startupnotify>
+            </action>
+        </item>
+        <item label="Firefox">
+            <action name="Execute">
+                <command>firefox</command>
+                <startupnotify>
+                    <enabled>yes</enabled>
+                </startupnotify>
+            </action>
+        </item>
+    </menu>
+
+    <menu id="apps-term-menu" label="Terminals">
+        <item label="Urxvt">
+            <action name="Execute">
+                <command>urxvt</command>
+            </action>
+        </item>
+        <item label="Xterm">
+            <action name="Execute">
+                <command>xterm</command>
+            </action>
+        </item>
+    </menu>
+
+    <menu id="apps-fileman-menu" label="File Managers">
+        <item label="Midnight Commander">
+            <action name="Execute">
+                <command>urxvt -e mc</command>
+            </action>
+        </item>
+        <item label="Thunar">
+            <action name="Execute">
+                <command>Thunar</command>
+                <startupnotify>
+                    <enabled>yes</enabled>
+                </startupnotify>
+            </action>
+        </item>
+    </menu>
+
+    <menu id="apps-office-menu" label="Office">
+        <item label="Calc">
+            <action name="Execute">
+                <command>localc</command>
+            </action>
+        </item>
+        <item label="Writer">
+            <action name="Execute">
+                <command>lowriter</command>
+            </action>
+        </item>
+        <separator/>
+        <item label="Impress">
+            <action name="Execute">
+                <command>loimpress</command>
+            </action>
+        </item>
+        <item label="Draw">
+            <action name="Execute">
+                <command>lodraw</command>
+            </action>
+        </item>
+        <item label="Math">
+            <action name="Execute">
+                <command>lomath</command>
+            </action>
+        </item>
+        <item label="Base">
+            <action name="Execute">
+                <command>lobase</command>
+            </action>
+        </item>
+    </menu>
+
+    <menu id="apps-graphics-menu" label="Graphics">
+        <item label="Gimp">
+            <action name="Execute">
+                <command>gimp</command>
+                <startupnotify>
+                    <enabled>yes</enabled>
+                </startupnotify>
+            </action>
+        </item>
+        <item label="Inkscape">
+            <action name="Execute">
+                <command>inkscape</command>
+                <startupnotify>
+                    <enabled>yes</enabled>
+                </startupnotify>
+            </action>
+        </item>
+    </menu>
+
+    <menu id="apps-accessories-menu" label="Accessories">
+        <item label="Calc">
+            <action name="Execute">
+                <command>urxvt -e calc</command>
+            </action>
+        </item>
+        <item label="Bc">
+            <action name="Execute">
+                <command>urxvt -e bc</command>
+            </action>
+        </item>
+    </menu>
+
+    <menu id="openbox-menu" label="Openbox">
+        <item label="Configuration Manager">
+            <action name="Execute">
+                <command>obconf</command>
+                <startupnotify>
+                    <enabled>yes</enabled>
+                </startupnotify>
+            </action>
+        </item>
+        <item label="Reconfigure">
+            <action name="Reconfigure" />
+        </item>
+        <item label="Restart">
+            <action name="Restart" />
+        </item>
+        <separator />
+        <item label="Exit">
+            <action name="Exit">
+                <prompt>yes</prompt>
+            </action>
+        </item>
+    </menu>
+
+    <menu id="mon-ctl-menu" label="Monitor &amp; Ctrl">
+        <item label="Alsa Mixer">
+            <action name="Execute">
+                <command>urxvt -e alsamixer</command>
+            </action>
+        </item>
+        <item label="Htop">
+            <action name="Execute">
+                <command>urxvt -e htop</command>
+            </action>
+        </item>
+        <item label="Nvidia Settings">
+            <action name="Execute">
+                <command>nvidia-settings</command>
+                <startupnotify>
+                    <enabled>yes</enabled>
+                </startupnotify>
+            </action>
+        </item>
+    </menu>
+
+    <menu id="state-menu" label="State">
+        <item label="Log Out">
+            <action name="Execute">
+                <prompt>Exit Openbox now?</prompt>
+                <command>openbox --exit</command>
+            </action>
+        </item>
+        <item label="Suspend">
+            <action name="Execute">
+                <prompt>Suspend system now?</prompt>
+                <command>systemctl suspend</command>
+            </action>
+        </item>
+        <item label="Hibernate">
+            <action name="Execute">
+                <prompt>Hibernate system now?</prompt>
+                <command>systemctl hibernate</command>
+            </action>
+        </item>
+        <item label="Reboot">
+            <action name="Execute">
+                <prompt>Reboot system now?</prompt>
+                <command>systemctl reboot</command>
+            </action>
+        </item>
+        <item label="Power Off">
+            <action name="Execute">
+                <prompt>Power off system now?</prompt>
+                <command>systemctl poweroff</command>
+            </action>
+        </item>
+    </menu>
+
+    <menu id="root-menu" label="Openbox 3">
+        <separator label="Applications" />
+        <item label="Urxvt">
+            <action name="Execute">
+                <command>urxvt</command>
+            </action>
+        </item>
+        <item label="Chrome">
+            <action name="Execute">
+                <command>google-chrome-stable</command>
+                <startupnotify>
+                    <enabled>yes</enabled>
+                </startupnotify>
+            </action>
+        </item>
+        <item label="Vim">
+            <action name="Execute">
+                <command>urxvt -e vim</command>
+            </action>
+        </item>
+        <separator />
+        <menu id="apps-net-menu"/>
+        <menu id="apps-term-menu"/>
+        <menu id="apps-fileman-menu"/>
+        <menu id="apps-office-menu"/>
+        <menu id="apps-graphics-menu"/>
+        <menu id="apps-accessories-menu"/>
+        <separator label="System" />
+        <menu id="openbox-menu"/>
+        <menu id="mon-ctl-menu"/>
+        <menu id="state-menu"/>
+        <separator />
+        <item label="Log Out">
+            <action name="Execute">
+                <prompt>Exit Openbox now?</prompt>
+                <command>openbox --exit</command>
+            </action>
+        </item>
+        <item label="Power Off">
+            <action name="Execute">
+                <prompt>Power off system now?</prompt>
+                <command>systemctl poweroff</command>
+            </action>
+        </item>
+    </menu>
+
+</openbox_menu>
+
+<!-- vim: set fdm=syntax fdl=1 fdn=3: -->
