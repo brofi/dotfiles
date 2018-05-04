@@ -214,6 +214,14 @@ nmap <silent> <Leader>c :bd<CR>
 
 "}}}
 
+"Syntax {{{
+
+" Set to be able to use fdm=syntax on xml files.
+" See: /usr/share/vim/vim80/syntax/xml.vim
+let g:xml_syntax_folding = 1
+
+"}}}
+
 "Plugin Customization / Variables
 
 "Syntastic {{{
