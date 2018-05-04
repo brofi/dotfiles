@@ -18,7 +18,5 @@ unclutter \
     -root &
 
 
-
+# exec openbox-session
 exec xmonad
-# exec openbox
-# exec startxfce4
