@@ -1,0 +1,98 @@
+# Openbox theme with gruvbox-dark colors.
+# See http://openbox.org/wiki/Help:Themes for options.
+
+# Increase border width
+border.width: 2
+
+# Remove inner padding
+window.client.padding.width: 0
+
+# Disable handle on bottom of window
+window.handle.width: 0
+
+# Colors
+window.active.border.color: #282828
+window.active.label.text.color: #fbf1c7
+window.inactive.label.text.color: #a89984
+window.inactive.title.separator.color: #1d2021
+
+## Button
+window.active.button.unpressed.image.color: #fbf1c7
+window.inactive.button.unpressed.image.color: #a89984
+
+window.*.button.pressed.image.color: #282828
+
+window.active.button.hover.image.color: #282828
+window.inactive.button.hover.image.color: #1d2021
+
+window.active.button.toggled.unpressed.image.color: #3c3836
+window.inactive.button.toggled.unpressed.image.color: #282828
+
+window.active.button.toggled.hover.image.color: #282828
+window.inactive.button.toggled.hover.image.color: #1d2021
+
+window.active.button.disabled.image.color: #282828
+window.inactive.button.disabled.image.color: #1d2021
+
+## Menu
+menu.title.text.color: #fbf1c7
+menu.items.text.color: #fbf1c7
+menu.items.disabled.text.color: #928374
+menu.items.active.text.color: #282828
+
+# Textures
+window.active.title.bg: Solid Flat
+window.active.title.bg.color: #282828
+
+window.inactive.title.bg: Solid Flat
+window.inactive.title.bg.color: #1d2021
+
+window.*.label.bg: Parentrelative
+
+## OSD
+osd.bg: Solid Flat
+osd.bg.color: #1d2021
+
+osd.hilight.bg: Solid Flat
+osd.hilight.bg.color: #fabd2f
+
+osd.unhilight.bg: Solid Flat
+osd.unhilight.bg.color: #3c3836
+
+## Button
+window.active.button.unpressed.bg: Solid Flat
+window.active.button.unpressed.bg.color: #3c3836
+
+window.inactive.button.unpressed.bg: Solid Flat
+window.inactive.button.unpressed.bg.color: #282828
+
+window.*.button.pressed.bg: Solid Flat
+window.*.button.pressed.bg.color: #d79921
+
+window.*.button.hover.bg: Solid Flat
+window.*.button.hover.bg.color: #fabd2f
+
+window.active.button.toggled.unpressed.bg: Solid Flat
+window.active.button.toggled.unpressed.bg.color: #fbf1c7
+
+window.inactive.button.toggled.unpressed.bg: Solid Flat
+window.inactive.button.toggled.unpressed.bg.color: #a89984
+
+window.*.button.toggled.hover.bg: Solid Flat
+window.*.button.toggled.hover.bg.color: #fabd2f
+
+window.active.button.disabled.bg: Solid Flat
+window.active.button.disabled.bg.color: #282828
+
+window.inactive.button.disabled.bg: Solid Flat
+window.inactive.button.disabled.bg.color: #1d2021
+
+## Menu
+menu.items.bg: Solid Flat
+menu.items.bg.color: #282828
+
+menu.items.active.bg: Solid Flat
+menu.items.active.bg.color: #fabd2f
+
+menu.title.bg: Solid Flat
+menu.title.bg.color: #1d2021

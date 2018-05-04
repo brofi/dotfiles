@@ -21,7 +21,7 @@
         <primaryMonitor>Active</primaryMonitor>
     </placement>
     <theme>
-        <name>Clearlooks</name>
+        <name>Gruvbox</name>
         <titleLayout>NLIMC</titleLayout>
         <keepBorder>yes</keepBorder>
         <animateIconify>yes</animateIconify>
