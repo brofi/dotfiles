@@ -44,6 +44,10 @@ if command -v pacman > /dev/null; then
     unset a _cw
 fi
 
+# fu alias completion
+_fu() { _command_offset 1;}
+complete -F _fu fu
+
 # Get number of colors this terminal supports.
 # Make sure $TERM is set correctly at this point.
 colors=0
