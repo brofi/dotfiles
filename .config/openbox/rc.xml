@@ -314,6 +314,52 @@
                 <command>urxvt</command>
             </action>
         </keybind>
+        <keybind key="XF86MyComputer">
+            <action name="Execute">
+                <command>urxvt</command>
+            </action>
+        </keybind>
+        <keybind key="XF86Explorer">
+            <action name="Execute">
+                <command>urxvt</command>
+            </action>
+        </keybind>
+        <keybind key="XF86AudioLowerVolume">
+            <action name="Execute">
+                <command>amixer set Master 2dB-</command>
+            </action>
+        </keybind>
+        <keybind key="XF86AudioRaiseVolume">
+            <action name="Execute">
+                <command>amixer set Master 2dB+</command>
+            </action>
+        </keybind>
+        <keybind key="XF86AudioMute">
+            <action name="Execute">
+                <command>amixer set Master toggle</command>
+            </action>
+        </keybind>
+        <keybind key="XF86Calculator">
+            <action name="Execute">
+                <command>urxvt -e bc -q</command>
+            </action>
+        </keybind>
+        <keybind key="XF86HomePage">
+            <action name="Execute">
+                <command>xdg-open https://google.com</command>
+                <startupnotify>
+                    <enabled>yes</enabled>
+                </startupnotify>
+            </action>
+        </keybind>
+        <keybind key="XF86Mail">
+            <action name="Execute">
+                <command>xdg-open https://mailbox.org</command>
+                <startupnotify>
+                    <enabled>yes</enabled>
+                </startupnotify>
+            </action>
+        </keybind>
     </keyboard>
     <mouse>
         <dragThreshold>1</dragThreshold>
