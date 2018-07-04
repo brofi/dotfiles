@@ -9,3 +9,6 @@ set colored-stats on
 # single tab will partially complete the word AND
 # show all possible completions if it is still ambiguous
 set show-all-if-ambiguous on
+
+# Quote the current or previous word
+"\C-xq": "\eb\"\ef\""
