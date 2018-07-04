@@ -70,6 +70,7 @@ if has('gui_running')
         set guifont=Consolas:h10:cANSI:qDRAFT
     elseif has ('gui_gtk')
         "Linux GUI specific options.
+        set guifont=Inconsolata\ 11
     endif
     "GUI window size.
     set lines=40
