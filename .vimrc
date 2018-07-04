@@ -281,6 +281,17 @@ let g:airline#extensions#tabline#show_close_button = 0
 let g:airline#extensions#tabline#buffer_min_count = 2
 "Display buffer index in tabline and expose tab mappings.
 let g:airline#extensions#tabline#buffer_idx_mode = 1
+"Fix: maxlinenr symbol not displayed correctly in urxvt with Inconsolata font
+"when set to bold (not even with letterspace 0). Maxlinenr only relevant if
+"winwidth(0) > 80 (see: airline init.vim).
+if !has('gui_running') && winwidth(0) > 80
+    " Strip maxlinenr symbol from maxlinenr part
+    call airline#parts#define('maxlinenr', {'raw': '/%L', 'accent': 'bold'})
+    " Define new part with symbol only (not bold)
+    call airline#parts#define_raw('maxlinenrsym', '%{g:airline_symbols.maxlinenr}')
+    " Add symbol only part to default z section
+    let g:airline_section_z = airline#section#create(['windowswap', 'obsession', '%3p%% ', 'linenr', 'maxlinenr', 'maxlinenrsym', ' :%3v'])
+endif
 
 "}}}
 
