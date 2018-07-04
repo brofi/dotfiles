@@ -13,6 +13,10 @@ if ! array_ > /dev/null 2>&1; then
     # shellcheck source=/dev/null
     . "$__dir/array-utils.sh"
 fi
+if ! number_ > /dev/null 2>&1; then
+    # shellcheck source=/dev/null
+    . "$__dir/number-utils.sh"
+fi
 
 
 # Reads user input and returns 0 if the user confirms, 1 otherwise.
@@ -61,5 +65,20 @@ function read_choice {
             "") ;;
             *) err_print "Selection '$idx' does not exist.";;
         esac
+    done
+}
+
+# Reads unsigned integer into the given variable name
+# $1 prompt
+# $2 variable name
+function read_uint {
+    while :; do
+        read -rp "$1" uint
+        if number_is_uint "$uint"; then
+            eval "$2"'=$uint'
+            return 0
+        else
+            err_print "NaN: '$uint'"
+        fi
     done
 }

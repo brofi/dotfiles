@@ -2,6 +2,9 @@
 #
 # Collection of useful number functions
 
+# Just true
+function number_ { :;}
+
 # True if $1 is natural number
 function number_is_uint {
     case $1 in
