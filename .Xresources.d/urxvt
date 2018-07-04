@@ -1,7 +1,7 @@
 !! URxvt resources
 
 URxvt*depth: 32
-URxvt*letterSpace: -1
+URxvt*letterSpace: 0
 URxvt*secondaryScroll: false
 
 ! Disable ctrl-shift iso 14755 modes
