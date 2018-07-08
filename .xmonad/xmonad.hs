@@ -32,8 +32,7 @@ import XMonad.Hooks.ManageDocks (AvoidStruts) -- for type only
 import XMonad.Layout.Grid (Grid(Grid))
 import XMonad.Layout.LayoutModifier (ModifiedLayout) -- for type only
 import XMonad.Layout.Maximize (maximize,maximizeRestore)
-import XMonad.Layout.Minimize (minimize,minimizeWindow
-    ,MinimizeMsg(RestoreNextMinimizedWin))
+-- import XMonad.Layout.Minimize (minimize,minimizeWindow,MinimizeMsg(RestoreNextMinimizedWin))
 import XMonad.Layout.MultiColumns (multiCol)
 import XMonad.Layout.MultiToggle (Toggle(Toggle),mkToggle,single)
 import XMonad.Layout.NoBorders (Ambiguity(Screen),lessBorders)
@@ -126,7 +125,7 @@ layout' =
     . smartSpacing spacing'
 
     -- Adds possibility to minimize and restore windows
-    . minimize
+    -- . minimize
 
     -- Allow windows to be yanked out of layout
     . maximize
@@ -469,8 +468,8 @@ keys' = [-- launch dmenu
           -- maximize
           , ((modMask', xK_backslash), withFocused $ sendMessage . maximizeRestore)
           -- minimize and restore
-          , ((modMask', xK_m), withFocused minimizeWindow)
-          , ((modMask' .|. shiftMask, xK_m), sendMessage RestoreNextMinimizedWin)
+          -- , ((modMask', xK_m), withFocused minimizeWindow)
+          -- , ((modMask' .|. shiftMask, xK_m), sendMessage RestoreNextMinimizedWin)
           -- toggle horizontal and vertical reflection
           , ((modMask' .|. controlMask, xK_x), sendMessage $ Toggle REFLECTX)
           , ((modMask' .|. controlMask, xK_y), sendMessage $ Toggle REFLECTY)
