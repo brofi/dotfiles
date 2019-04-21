@@ -159,6 +159,9 @@ Plug 'majutsushi/tagbar',
 "CtrlP: Full path fuzzy file, buffer, mru, tag, ... finder.
 Plug 'kien/ctrlp.vim'
 
+"Vimtex: A modern vim plugin for editing LaTeX files.
+Plug 'lervag/vimtex'
+
 "Gruvbox: A color scheme.
 Plug 'morhetz/gruvbox'
 
@@ -173,8 +176,10 @@ call plug#end()
 "want to use ';' as <Leader>.
 nnoremap , ;
 
-"Use a convenient home row key as <Leader> (default: backslash).
+"Use a convenient home row key as <Leader> and <LocalLeader> (default:
+"backslash).
 let mapleader = ';'
+let maplocalleader = ';'
 
 "Don't treat wrapped lines as single lines when moving the cursor down (j) and
 "up (k).
@@ -393,6 +398,42 @@ let g:ctrlp_mruf_default_order = 1
 
 "Enable extensions to show up in status bar.
 let g:ctrlp_extensions = ['mixed', 'bookmarkdir']
+
+"}}}
+
+"Vimtex {{{
+"
+"Requires xdotool for auto refresh and forward and backward search. Latexmk
+"comes with texlive-core.
+
+"Server automatically started with GVim.
+if !has('gui_running')
+    " Ensure Vim starts with a server.
+    if empty(v:servername) && exists('*remote_startserver')
+        call remote_startserver('VIM')
+    endif
+endif
+
+"Auto refresh doesn't work with default 'general' (xdg-open).
+let g:vimtex_view_method = 'mupdf'
+
+"Don't fall back to plain TeX if there is not enough information to detect file
+"as LaTeX (e.g. for included tex files).
+let g:tex_flavor = 'latex'
+
+"Set a separate build directory for latexmk.
+let g:vimtex_compiler_latexmk = {
+    \ 'build_dir': './build',
+\}
+
+"Disable overfull/underfull \hbox and all package warnings.
+let g:vimtex_quickfix_latexlog = {
+    \ 'overfull' : 0,
+    \ 'underfull' : 0,
+    \ 'packages' : {
+    \   'default' : 0,
+    \ },
+\}
 
 "}}}
 
