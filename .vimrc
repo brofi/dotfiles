@@ -153,7 +153,8 @@ Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 
 "Tagbar: Plugin to browse the tags of the current file and get an overview of
 "its structure. Remember to install ctags as well.
-Plug 'majutsushi/tagbar'
+Plug 'majutsushi/tagbar',
+    \ { 'on': ['TagbarOpen', 'TagbarToggle', 'TagbarOpenAutoClose'] }
 
 "CtrlP: Full path fuzzy file, buffer, mru, tag, ... finder.
 Plug 'kien/ctrlp.vim'
@@ -390,7 +391,7 @@ let g:ctrlp_prompt_mappings = { 'ToggleMRURelative()': ['<F2>'] }
 "Don't sort when searching in MRU mode.
 let g:ctrlp_mruf_default_order = 1
 
-"Enable extenstions to show up in status bar.
+"Enable extensions to show up in status bar.
 let g:ctrlp_extensions = ['mixed', 'bookmarkdir']
 
 "}}}
