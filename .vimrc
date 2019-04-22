@@ -431,7 +431,9 @@ if has('win32') || has('win32unix')
 
         "Setup inverse search (not for Cygwin, because clientserver is not
         "available).
-        if executable('gvim') && has('win32')
+        if has('win32unix')
+            let g:vimtex_view_general_options .= ' -inverse-search ""'
+        elseif executable('gvim')
             let g:vimtex_view_general_options .=
                         \ ' -inverse-search "gvim --servername ' . v:servername . ' --remote-send \"'
                             \ . ':e \%f^<CR^>'
