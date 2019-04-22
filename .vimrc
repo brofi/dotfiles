@@ -404,18 +404,52 @@ let g:ctrlp_extensions = ['mixed', 'bookmarkdir']
 "Vimtex {{{
 "
 "Requires xdotool for auto refresh and forward and backward search. Latexmk
-"comes with texlive-core.
+"comes with texlive-core on Arch Linux. On Windows, if using TeX Live, make sure
+"to check component 'helper programs'.
+
+"Don't use vimtex if necessary programs are not available.
+if !executable('latex') || !executable('latexmk')
+    let g:vimtex_enabled = 0
+endif
 
 "Server automatically started with GVim.
 if !has('gui_running')
-    " Ensure Vim starts with a server.
+    "Ensure Vim starts with a server.
     if empty(v:servername) && exists('*remote_startserver')
         call remote_startserver('VIM')
     endif
 endif
 
-"Auto refresh doesn't work with default 'general' (xdg-open).
-let g:vimtex_view_method = 'mupdf'
+if has("gui_win32")
+    "Try to use SumatraPDF for Windows.
+    if executable('SumatraPDF')
+        let g:vimtex_view_general_viewer = 'SumatraPDF'
+        let g:vimtex_view_general_options
+                    \ = '-reuse-instance'
+                    \ . ' -forward-search @tex @line @pdf'
+        let g:vimtex_view_general_options_latexmk = '-reuse-instance'
+
+        if executable('gvim')
+            let g:vimtex_view_general_options .=
+                        \ ' -inverse-search "gvim --servername ' . v:servername . ' --remote-send \"'
+                            \ . ':e \%f^<CR^>'
+                            \ . ':\%l^<CR^>'
+                            \ . ':norm\!zzzv^<CR^>'
+                            \ . ':call remote_foreground('''.v:servername.''')^<CR^>'
+                        \ . '\""'
+        endif
+    else
+        "So we don't get warnings about unexecutable general viewer.
+        let g:vimtex_view_enabled = 0
+    endif
+else
+    "Try to use MuPDF for Linux.
+    if executable('mupdf')
+        "Auto refresh doesn't work with default 'general'
+        "(vimtex_view_general_viewer = xdg-open).
+        let g:vimtex_view_method = 'mupdf'
+    endif
+endif
 
 "Don't fall back to plain TeX if there is not enough information to detect file
 "as LaTeX (e.g. for included tex files).
