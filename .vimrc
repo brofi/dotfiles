@@ -420,8 +420,8 @@ if !has('gui_running')
     endif
 endif
 
-if has("gui_win32")
-    "Try to use SumatraPDF for Windows.
+if has('win32') || has('win32unix')
+    "Try to use SumatraPDF for Windows and Cygwin.
     if executable('SumatraPDF')
         let g:vimtex_view_general_viewer = 'SumatraPDF'
         let g:vimtex_view_general_options
@@ -429,7 +429,9 @@ if has("gui_win32")
                     \ . ' -forward-search @tex @line @pdf'
         let g:vimtex_view_general_options_latexmk = '-reuse-instance'
 
-        if executable('gvim')
+        "Setup inverse search (not for Cygwin, because clientserver is not
+        "available).
+        if executable('gvim') && has('win32')
             let g:vimtex_view_general_options .=
                         \ ' -inverse-search "gvim --servername ' . v:servername . ' --remote-send \"'
                             \ . ':e \%f^<CR^>'
