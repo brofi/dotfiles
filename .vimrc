@@ -412,12 +412,9 @@ if !executable('latex') || !executable('latexmk')
     let g:vimtex_enabled = 0
 endif
 
-"Server automatically started with GVim.
-if !has('gui_running')
-    "Ensure Vim starts with a server.
-    if empty(v:servername) && exists('*remote_startserver')
-        call remote_startserver('VIM')
-    endif
+"Ensure Vim starts with a server if feature 'clientserver' is available.
+if has('clientserver') && empty(v:servername)
+    call remote_startserver('VIM')
 endif
 
 if has('win32') || has('win32unix')
