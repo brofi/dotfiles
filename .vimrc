@@ -258,6 +258,9 @@ let g:syntastic_stl_format = 'Syn: ln:%F (e:%e|w:%w)'
 "Allow shellcheck to 'source' outside of FILES.
 let g:syntastic_sh_shellcheck_args = '-x'
 
+"Prefer chktex over lacheck, since we can't ignore warnings in lacheck.
+let g:syntastic_tex_checkers = ['chktex', 'lacheck']
+
 "}}}
 
 "Airline {{{
