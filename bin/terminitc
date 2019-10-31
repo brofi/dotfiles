@@ -13,7 +13,7 @@
 
 # Only supports fbterm and linux (see above).
 if [ "$TERM" != "fbterm" ] && [ "$TERM" != "linux" ]; then
-    exit 1
+    exit 0
 fi
 
 # Matches color definitions and remembers the color number and the hexadecimal
