@@ -7,31 +7,82 @@ __dir=$(dirname "${BASH_SOURCE[0]}")
 . "$__dir/../lib/number-utils.sh"
 . "$__dir/../lib/error-utils.sh"
 
-_IFS=$IFS; IFS=$'\n'
-# Get IDs of all slave pointers
-slave_pointer_ids=($(xinput --list | grep 'slave \+pointer' | cut -f2 | cut -d= -f2))
-IFS=$_IFS
-
 # Get xinput device name for given id.
 # $1 device id
 function get_device_name {
     xinput --list --name-only "$1"
 }
 
-# Get pointer from user
-while true; do
-    echo
-    for id in "${slave_pointer_ids[@]}"; do
+function is_valid_id {
+    xinput --list --id-only "$1" >/dev/null 2>&1
+}
+
+# $1 array of pointer IDs
+function print_pointer_ids {
+    local pointer_ids=("${@}")
+    printf '\n'
+    for id in "${pointer_ids[@]}"; do
         printf '%s: %s\n' "$id" "$(get_device_name "$id")"
     done
     printf '\n'
-    read -rp 'Select pointer id: ' pointer_id
-    if array_elem "$pointer_id" "${slave_pointer_ids[@]}"; then
-        break
-    elif [ -n "$pointer_id" ]; then
-        err_print "Pointer '$pointer_id' does not exist."
-    fi
-done
+}
+
+function read_slave_pointer_id {
+    # Avoiding break statements, since we have nested while loops.
+    local valid_choice=false
+    while ! $valid_choice; do
+        read -rp '> Select pointer id: ' pointer_id
+        if array_elem "$pointer_id" "${slave_pointer_ids[@]}"; then
+            valid_choice=true
+        elif [ -n "$pointer_id" ]; then
+            err_print "Pointer '$pointer_id' does not exist."
+        fi
+    done
+}
+
+function read_curr_pointer_id {
+    # Avoiding break statements, since we have nested while loops.
+    local valid_choice=false
+    printf 'o: Other\n\n'
+    while ! $valid_choice; do
+        read -rp '> Select pointer id: ' pointer_id
+        if array_elem "$pointer_id" "${curr_pointer_ids[@]}"; then
+            valid_choice=true
+        elif [ "$pointer_id" = 'o' ]; then
+            print_pointer_ids "${slave_pointer_ids[@]}"
+            read_slave_pointer_id
+            valid_choice=true
+        elif [ -n "$pointer_id" ]; then
+            err_print "Pointer '$pointer_id' does not exist."
+        fi
+    done
+}
+
+if [ -f ~/.mouse ]; then
+    _IFS=$IFS; IFS=$'\n'
+    # Get pointer id(s) from config
+    curr_pointer_ids=($(grep -o 'xinput --set-prop [0-9]\+' ~/.mouse | cut -d' ' -f3 | uniq | sort -n))
+    array_filter is_valid_id curr_pointer_ids
+    IFS=$_IFS
+else
+    # Create mouse config for use with .xinitrc
+    echo "#!/bin/sh" > ~/.mouse && chmod u+x ~/.mouse
+fi
+
+_IFS=$IFS; IFS=$'\n'
+# Get IDs of all slave pointers
+slave_pointer_ids=($(xinput --list | grep 'slave \+pointer' | cut -f2 | cut -d= -f2 | sort -n))
+IFS=$_IFS
+
+if [ ${#curr_pointer_ids[@]} -gt 1 ]; then
+    print_pointer_ids "${curr_pointer_ids[@]}"
+    read_curr_pointer_id
+elif [ ${#curr_pointer_ids[@]} -eq 1 ]; then
+    pointer_id=${curr_pointer_ids[0]}
+else
+    print_pointer_ids "${slave_pointer_ids[@]}"
+    read_slave_pointer_id
+fi
 
 # Get all acceleration and scrolling properties for selected pointer
 _IFS=$IFS; IFS=$'\n'
@@ -50,7 +101,9 @@ done
 # Get property from user
 is_shortcut=false
 while true; do
-    echo
+    printf '\n'
+    printf "Properties for '%s':\n" "$(get_device_name "$pointer_id")"
+    printf '\n'
     for i in "${!mouse_prop_names[@]}"; do
         printf '%s: %s\n' "${mouse_prop_ids[$i]}" "${mouse_prop_names[$i]}"
     done
@@ -61,7 +114,9 @@ while true; do
     printf 'b: Enable middle button scrolling\n'
     printf '\n'
 
-    read -rp "Select property id or shortcut for '$(get_device_name "$pointer_id")': " ps_choice
+    printf 'z: Switch pointer\n\n'
+
+    read -rp "> Select property id or shortcut for '$(get_device_name "$pointer_id")': " ps_choice
     idx=$(array_first_index_of "$ps_choice" "${mouse_prop_ids[@]}")
     if [ -n "$idx" ]; then
         property_names=("${mouse_prop_names[$idx]}")
@@ -83,6 +138,9 @@ while true; do
         new_values=('0, 0, 1')
         is_shortcut=true
         break
+    elif [ "$ps_choice" = 'z' ]; then
+        print_pointer_ids "${curr_pointer_ids[@]}"
+        read_curr_pointer_id
     elif [ -n "$ps_choice" ]; then
         err_print "Pointer '$ps_choice' does not exist."
     fi
@@ -125,9 +183,6 @@ if [ "$is_shortcut" = false ]; then
     done
     new_values=("$new_value")
 fi
-
-# Create mouse config for use with .xinitrc if not existent
-[ ! -f ~/.mouse ] && echo "#!/bin/sh" > ~/.mouse && chmod u+x ~/.mouse
 
 for i in "${!property_names[@]}"; do
     if xinput --set-prop "$pointer_id" "${property_names[$i]}" ${new_values[$i]} > /dev/null 2>&1; then
