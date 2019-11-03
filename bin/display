@@ -1,83 +1,320 @@
 #!/bin/bash
-# shellcheck disable=SC1090
+# shellcheck source=/dev/null
 
 __dir=$(dirname "${BASH_SOURCE[0]}")
 . "$__dir/../lib/error-utils.sh"
-. "$__dir/../lib/array-utils.sh"
 . "$__dir/../lib/read-utils.sh"
+. "$__dir/../lib/number-utils.sh"
 
-int="DVI-I-1"
-ext="HDMI-0"
+__debug=false
+__debug_num_monitors=3
 
-# Readjusts background
+# Get connected outputs from xrandr.
+_IFS=$IFS; IFS=$'\n'
+connected=($(xrandr | sed -n 's/\(.*\)[[:space:]]connected.*/\1/p'))
+IFS=$_IFS
+
+[ $__debug = true ] && connected=("${connected[@]:0:$__debug_num_monitors}")
+
+if [ ${#connected[@]} -le 1 ]; then
+    err_exit "Two or more displays required." 1
+fi
+
+# Prints help page.
+function usage {
+    echo "usage: display [COMMAND]
+
+COMMAND:
+    clone [OUTPUT...]
+    Clones the given outputs with their monitor's highest common resolution.
+    Asks for outputs if less than two outputs are given but more are available.
+    If the system has exactly two connected outputs, they don't have to be
+    specified.
+
+    extend [OUTPUT [--primary] ...]
+    Extends the given outputs to the right of the first given output. Asks for
+    next outputs from left to right if less than two outputs are given. Uses
+    first output marked with --primary as primary output and asks for primary
+    output if not specified.
+
+    only [OUTPUT]
+    Only show on given output.
+
+    list
+    Prints monitor names of connected outputs.
+
+    help
+    Prints this help."
+}
+
+# Readjusts background set with 'feh'.
 function set_bg {
+    command -v 'feh' > /dev/null 2>&1 || return 1
     [ -x ~/.fehbg ] && . ~/.fehbg
 }
 
-# Prints usage
-function usage {
-    echo "usage: display [intern || extern || clone || extend]"
-    exit 1
+# Print all connected outputs with their monitor's name.
+function print_connected {
+    for c in "${connected[@]}"; do
+        printf '%s\n' "$(get_output_name "$c")"
+    done
 }
 
-# Checks if given display exists and is connected
-# $1 display to check
-function is_connected {
-    [ -z "$1" ] && return 1
-    xrandr | grep -w "$1" | grep -qw connected
+# Check if given output is connected.
+# $1 output
+function valid_output {
+    [ $# -eq 0 ] && return 1
+    array_elem "$1" "${connected[@]}"
 }
 
-# check if parameter given, before reading in displays
-[ -z "$1" ] && usage
+# Get EDID from xrandr of given output.
+# $1 output
+function get_edid {
+    xrandr --verbose \
+    | sed -n '
+        /^'"$1"'[[:blank:]]connected/,/^[[:alnum:]-]\+[[:blank:]]\(dis\)\?connected/ {
+            s/^[[:blank:]]\+//
+            /^[[:xdigit:]]\+$/ p
+        }' \
+    | tr -d '\n'
+}
 
-# get connected displays
-_IFS=$IFS; IFS=$'\n'
-connected=($(xrandr | grep -w connected))
-IFS=$_IFS
+# Gets the monitor name decoded from the monitor's EDID.
+# see: http://read.pudn.com/downloads110/ebook/456020/E-EDID%20Standard.pdf
+# $1 output
+function get_monitor_name {
+    local edid
+    edid="$(get_edid "$1")"
+    # Get the last three of the 18-byte Detailed Timing Description blocks which
+    # can be used as Monitor Descriptor blocks. When used as a Monitor
+    # Descriptor Block they start with '000000', then e.g. 'fc' for monitor
+    # name, then '00'. The remaining 13 bytes represent the actual value.
+    printf '%s' "${edid:144:-4}" \
+        | sed 's/.*000000fc00\([[:xdigit:]]\{26\}\).*/\1/' \
+        | xxd -r -p \
+        | sed 's/[[:space:]]*$//'
+}
 
-if ! is_connected $int; then
-    echo
-    err_print "Primary display '$int' doesn't exist or isn't connected."
+# Monitor name in format: monitor_name (output).
+# $1 output
+function get_output_name {
+    printf '%s (%s)\n' "$(get_monitor_name "$1")" "$1"
+}
 
-    # let user choose primary display
-    echo
-    echo "Choose primary display:"
-    read_choice "${connected[@]}"
-    # we only want the exit status, not the printed choices
-    choice=$?
+# Gets resolutions for given outputs.
+function get_resolutions {
+    for o in "$@"; do
+        xrandr -q | sed -n '
+            /^'"$o"'/,/.*\(dis\)\?connected/ {
+                /^'"$o"'/n
+                /.*\(dis\)\?connected/ !{
+                    s/^[[:blank:]]*\([0-9]\+x[0-9]\+\).*/\1/p
+                }
+            }'
+    done
+}
 
-    # get actual display name
-    int=$(echo "${connected[$choice]}" | cut -d' ' -f1)
-fi
+# Gets common resolution for given outputs.
+function get_common_resolution {
+    get_resolutions "$@" \
+         | sort -nr \
+         | uniq -cd \
+         | sort -nu \
+         | sed -n 's/^.*'"$#"'[[:space:]]\(.*\)/\1/p'
+}
 
-# same for second display
-if ! is_connected $ext; then
-    echo
-    err_print "Secondary display '$ext' doesn't exist or isn't connected."
+# Collects valid outputs from the command line arguments. If not enough valid
+# outputs are given in 'args' the user is queried for additional outputs.
+#
+# $1 number of outputs required
+# $2 number of outputs allowed
+# $3 title of user query
+# $4 if outputs need to be in order (optional)
+function get_outputs {
+    local min=$1
+    local max=$2
+    local title=$3
+    local needsOrder=${4:-false}
 
-    echo
-    echo "Choose secondary display:"
-    read_choice "${connected[@]}"
-    choice=$?
+    # Enforce sensible min/max interval.
+    if ! number_is_uint "$min" || [ "$min" -gt ${#connected[@]} ] \
+        || ! number_is_uint "$max" || [ "$max" -gt ${#connected[@]} ] \
+        || [ "$min" -gt "$max" ]; then
+            return 1
+    fi
 
-    ext=$(echo "${connected[$choice]}" | cut -d' ' -f1)
-fi
+    # If we need exactly the number of outputs connected to the system and don't
+    # need them in a specific order get all connected outputs.
+    if [ "$min" -eq "$max" ] && [ "$max" -eq ${#connected[@]} ] \
+        && [ "$needsOrder" = false ]; then
+            outputs=("${connected[@]}")
+            return
+    fi
+
+    # Collect valid outputs from command line arguments.
+    for i in "${!args[@]}"; do
+        if [ '--primary' = "${args[$i]}" ] && [ -z "$primary" ] && [ "$i" -gt 0 ]; then
+            primary=${outputs[$((i - 1))]}
+        elif valid_output "${args[$i]}"; then
+            outputs=("${outputs[@]}" "${args[$i]}")
+        fi
+    done
+
+    # Return if enough valid outputs were specified on command line.
+    if [ ${#outputs[@]} -ge "$min" ]; then
+        # We only need the names if we have to query for primary
+        if [ -z "$primary" ]; then
+            for o in "${outputs[@]}"; do
+                output_names=("${output_names[@]}" "$(get_output_name "$o")")
+            done
+        fi
+        return
+    fi
+
+    for o in "${outputs[@]}"; do
+        output_names=("${output_names[@]}" "$(get_output_name "$o")")
+    done
+
+    # Read missing outputs from user not specified on command line.
+
+    [ -n "$title" ] && printf '%s\n' "$title"
+    local choices
+    # Ending early is reasonable only if we don't need an exact number of
+    # outputs.
+    if [ "$min" -ne "$max" ]; then
+        choices=("${choices[@]}" 'done')
+        [ "$needsOrder" = false ] && choices=("${choices[@]}" 'all')
+    fi
+    local choices_raw=("${choices[@]}")
+    for c in "${connected[@]}"; do
+        if ! array_elem "$c" "${outputs[@]}"; then
+            choices_raw=("${choices_raw[@]}" "$c")
+            choices=("${choices[@]}" "$(get_output_name "$c")")
+        fi
+    done
+    while [ ${#outputs[@]} -lt "$max" ]; do
+        read_choice "${choices[@]}"
+        local choice=$?
+        # If 'all' was chosen, set them as outputs.
+        if [ "$min" -ne "$max" ] && [ "$needsOrder" = false ] && [ $choice -eq 1 ]; then
+            outputs=("${connected[@]}")
+            output_names=()
+            for c in "${connected[@]}"; do
+                output_names=("${output_names[@]}" "$(get_output_name "$c")")
+            done
+            break
+        # Stop if user is done and enough outputs are read.
+        elif [ "$min" -ne "$max" ] && [ $choice -eq 0 ]; then
+            if [ ${#outputs[@]} -ge "$min" ]; then
+                break
+            else
+                echo "Not enough outputs chosen yet."
+            fi
+        # Collect chosen output and remove it from the next choices to be made.
+        else
+            outputs=("${outputs[@]}" "${choices_raw[$choice]}")
+            output_names=("${output_names[@]}" "${choices[$choice]}")
+            choices=("${choices[@]:0:$choice}" "${choices[@]:$((choice + 1))}")
+            choices_raw=("${choices_raw[@]:0:$choice}" "${choices_raw[@]:$((choice + 1))}")
+            # If we need exactly the number of outputs connected to the system
+            # and the user chose the order of all outputs except the last one,
+            # add it.
+            if [ "$min" -eq "$max" ] && [ "$max" -eq ${#connected[@]} ] \
+                && [ "${#outputs[@]}" -eq "$((max - 1))" ] \
+                && [ "$needsOrder" = true ]; then
+                    outputs=("${outputs[@]}" "${choices_raw[0]}")
+                    output_names=("${output_names[@]}" "${choices[0]}")
+            fi
+        fi
+    done
+}
+
+# Clone two or more outputs.
+function clone {
+    if ! get_outputs 2 ${#connected[@]} ""; then
+        err_exit "Unexpected error." 1
+    fi
+
+    # Make xrandr command.
+    local res
+    res=$(get_common_resolution "${outputs[@]}")
+    local cmd="xrandr --output ${outputs[0]} --mode $res"
+    for o in "${outputs[@]:1}"; do
+        cmd="$cmd --output $o --same-as ${outputs[0]} --mode $res"
+    done
+    for c in "${connected[@]}"; do
+        if ! array_elem "$c" "${outputs[@]}"; then
+            cmd="$cmd --output $c --off"
+        fi
+    done
+
+    if [ "$__debug" = true ]; then
+        echo "$cmd"
+    else
+        eval "$cmd" && set_bg
+    fi
+}
+
+# Extend two or more displays.
+# TODO --pos xxy with y=(max.height-height)/2
+function extend {
+    if ! get_outputs 2 ${#connected[@]} "Choose outputs from left to right:" true; then
+        err_exit "Unexpected error." 1
+    fi
+
+    if [ -z "$primary" ]; then
+        printf '\nChoose primary:\n'
+        read_choice "${output_names[@]}"
+        primary=${outputs[$?]}
+    fi
+
+    local cmd="xrandr"
+    for i in "${!outputs[@]}"; do
+        cmd="$cmd --output ${outputs[$i]} --auto"
+        [ "$primary" = "${outputs[$i]}" ] && cmd="$cmd --primary"
+        [ "$i" -gt 0 ] && cmd="$cmd --right-of ${outputs[$((i - 1))]}"
+    done
+    for c in "${connected[@]}"; do
+        if ! array_elem "$c" "${outputs[@]}"; then
+            cmd="$cmd --output $c --off"
+        fi
+    done
+
+    if [ "$__debug" = true ]; then
+        echo "$cmd"
+    else
+        eval "$cmd" && set_bg
+    fi
+}
+
+# Only show on one display.
+function only {
+    if ! get_outputs 1 1 ""; then
+        err_exit "Unexptected error." 1
+    fi
+
+    local cmd="xrandr --output ${outputs[0]} --auto"
+    for c in "${connected[@]}"; do
+        if ! array_elem "$c" "${outputs[@]}"; then
+            cmd="$cmd --output $c --off"
+        fi
+    done
+
+    if [ "$__debug" = true ]; then
+        echo "$cmd"
+    else
+        eval "$cmd" && set_bg
+    fi
+}
 
 case $1 in
-    intern)
-        xrandr --output "$int" --auto --output "$ext" --off && set_bg
-        ;;
-    extern)
-        xrandr --output "$int" --off --output "$ext" --auto && set_bg
-        ;;
-    clone)
-        res=$(xrandr -q | awk '/^ *[0-9]*x[0-9]*/{ print $1 }' | sort -n | uniq -d | tail -1)
-        xrandr --output "$int" --mode "$res" --output "$ext" --same-as "$int" --mode "$res" && set_bg
-        ;;
-    extend)
-        xrandr --output "$int" --auto --output "$ext" --auto --right-of "$int" && set_bg
-        ;;
-    *)
-        usage
-        ;;
+    clone|extend|only)
+        cmd=$1; shift
+        args=("$@")
+        $cmd
+        unset cmd;;
+    list|--list) print_connected && exit 0;;
+    help|--help) usage && exit 0;;
+    *) usage && exit 1;;
 esac
+unset outputs
