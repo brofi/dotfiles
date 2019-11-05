@@ -28,8 +28,7 @@ for f in ~/.bash_{aliases,functions}; do
 done
 
 # Set up Node Version Manager
-init_nvm=/usr/share/nvm/init-nvm.sh
-[ -f "$init_nvm" ] && . "$init_nvm"
+[ -f /usr/share/nvm/init-nvm.sh ] && . /usr/share/nvm/init-nvm.sh
 
 # pacman alias completion
 if command -v pacman > /dev/null; then
