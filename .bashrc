@@ -27,6 +27,10 @@ for f in ~/.bash_{aliases,functions}; do
     [ -f "$f" ] && . "$f"
 done
 
+# Set up Node Version Manager
+init_nvm=/usr/share/nvm/init-nvm.sh
+[ -f "$init_nvm" ] && . "$init_nvm"
+
 # pacman alias completion
 if command -v pacman > /dev/null; then
     # Set up dynamic completion loading for pacman, so we don't have to source
