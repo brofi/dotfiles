@@ -67,6 +67,8 @@ alias xkeycodes="xev | grep -A2 --line-buffered '^KeyRelease' \
 alias vlcrand="fu vlc --media-library /media/videos --random --no-audio \
     --no-sub-autodetect-file --no-osd --no-spu --no-video-title-show \
     --no-overlay --no-video-deco"
+# Connect to KIT VPN.
+alias kitvpn='sudo openvpn /etc/openvpn/kit.ovpn'
 
 ### Safety last
 alias rm='rm -i'
