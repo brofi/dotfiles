@@ -123,6 +123,59 @@ function get_common_resolution {
          | sed -n 's/^.*'"$#"'[[:space:]]\(.*\)/\1/p'
 }
 
+# Returns xrandr --mode and --rate if a higher refresh rate than the preferred
+# one was found otherwise --auto. Unfortunately --auto chooses not only the
+# preferred mode but also the preferred refresh rate. Also using --auto and
+# changing --rate afterwards doesn't work.
+function get_mode_cmd {
+    local mode_array
+    IFS=" " read -r -a mode_array <<< "$(get_preferred_mode "$1")"
+
+    local pref_rr
+    pref_rr=$(round_rr "${mode_array[1]}")
+
+    local high_rr=$pref_rr
+    # Find higher refresh rate than the preferred one.
+    for r in "${mode_array[@]:2}"; do
+        r=$(round_rr "$r")
+        if [ "$r" -gt "$high_rr" ]; then
+            high_rr=$r
+        fi
+    done
+
+    if [ "$high_rr" -ne "$pref_rr" ]; then
+        printf '%s %s %s %i' '--mode' "${mode_array[0]}" '--rate' "$high_rr"
+    else
+        printf '%s' '--auto'
+    fi
+}
+
+# Gets first preferred mode of given output and removes current (*) and
+# preferred (+) markers.
+function get_preferred_mode {
+    xrandr -q | sed -n '
+        /^'"$1"'/,/.*\(dis\)\?connected/ {
+            /^'"$1"'/n
+            /.*\(dis\)\?connected/ !{
+                /+/ {
+                    s/[\* ]+//
+                    s/\*//
+                    p
+                }
+            }
+        }' | head -n 1
+}
+
+# Rounds up given refresh rate to an integer.
+function round_rr {
+    local left="${1%%.*}"
+    local right="${1##*.}"
+    if [ "${right::1}" -ge 5 ]; then
+        left=$((left + 1))
+    fi
+    printf '%s' "$left"
+}
+
 # Collects valid outputs from the command line arguments. If not enough valid
 # outputs are given in 'args' the user is queried for additional outputs.
 #
@@ -270,7 +323,8 @@ function extend {
 
     local cmd="xrandr"
     for i in "${!outputs[@]}"; do
-        cmd="$cmd --output ${outputs[$i]} --auto"
+        cmd="$cmd --output ${outputs[$i]}"
+        cmd="$cmd $(get_mode_cmd "${outputs[$i]}")"
         [ "$primary" = "${outputs[$i]}" ] && cmd="$cmd --primary"
         [ "$i" -gt 0 ] && cmd="$cmd --right-of ${outputs[$((i - 1))]}"
     done
@@ -293,7 +347,8 @@ function only {
         err_exit "Unexptected error." 1
     fi
 
-    local cmd="xrandr --output ${outputs[0]} --auto"
+    local cmd="xrandr --output ${outputs[0]}"
+    cmd="$cmd $(get_mode_cmd "${outputs[0]}")"
     for c in "${connected[@]}"; do
         if ! array_elem "$c" "${outputs[@]}"; then
             cmd="$cmd --output $c --off"
