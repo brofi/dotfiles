@@ -14,7 +14,7 @@ module Main where
 
 import Colors as C
 
-import Control.Monad (liftM)
+import Control.Monad (liftM,(>=>))
 import Data.List (intercalate)
 import Data.Monoid (All) -- for type only
 import qualified Data.Map as M
@@ -23,12 +23,13 @@ import System.Directory (getHomeDirectory,createDirectoryIfMissing)
 import System.Process (readProcess)
 
 import XMonad
-import XMonad.Hooks.DynamicLog (statusBar
-    ,PP,ppCurrent,ppVisible,ppHidden,ppHiddenNoWindows,ppUrgent
-    ,ppSep,ppWsSep,ppTitle,ppLayout,ppOrder,ppSort,ppExtras
-    ,xmobarColor,dzenColor,shorten,pad,wrap)
+import XMonad.Hooks.DynamicBars(DynamicStatusBar,DynamicStatusBarPartialCleanup
+    ,dynStatusBarStartup',dynStatusBarEventHook',multiPP)
+import XMonad.Hooks.DynamicLog (PP,ppCurrent,ppVisible,ppHidden
+    ,ppHiddenNoWindows,ppUrgent,ppSep,ppWsSep,ppTitle,ppLayout,ppOrder,ppSort
+    ,ppExtras,xmobarColor,dzenColor,shorten,pad,wrap)
 import XMonad.Hooks.EwmhDesktops (ewmh,fullscreenEventHook)
-import XMonad.Hooks.ManageDocks (AvoidStruts) -- for type only
+import XMonad.Hooks.ManageDocks (AvoidStruts,avoidStruts,docks,ToggleStruts(ToggleStruts))
 import XMonad.Layout.Grid (Grid(Grid))
 import XMonad.Layout.LayoutModifier (ModifiedLayout) -- for type only
 import XMonad.Layout.Maximize (maximize,maximizeRestore)
@@ -42,6 +43,7 @@ import XMonad.Layout.Renamed (renamed,Rename(CutWordsLeft,Replace))
 import XMonad.Layout.Spacing (smartSpacing)
 import qualified XMonad.StackSet as W -- window key bindings (e.g. additional workspace)
     (greedyView,shift,focusUp,focusDown)
+import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.WorkspaceCompare (getSortByIndex) -- ppSort
 
 -- Experimental
@@ -198,7 +200,7 @@ eventHook' = fullscreenEventHook
 
 Combine actions with '<+>'.
 -}
-startupHook' :: X()
+startupHook' :: X ()
 startupHook' = (haddockDir >>= io . createDirectoryIfMissing False)
                <+> io writeTrayerCmd
                <+> io writeDzenCmd
@@ -211,13 +213,13 @@ writeTrayerCmd = getXMonadDir >>= (\d -> writeFile (d ++ "/.trayerCmd") trayerCm
 
 -- | Write dzen command line string to file for debugging purposes.
 writeDzenCmd :: IO()
-writeDzenCmd = getXMonadDir >>= (\d -> writeFile (d ++ "/.dzenCmd") dzenCmd)
+writeDzenCmd = getXMonadDir >>= (\d -> writeFile (d ++ "/.dzenCmd") (dzenCmd (S 0)))
 
 -- | Write xmobar command line string to file for debugging purposes.
 writeXmobarCmd :: IO()
 writeXmobarCmd = do
     d <- getXMonadDir
-    cmd <- xmobarCmd
+    cmd <- xmobarCmd (S 0)
     writeFile (d ++ "/.xmobarCmd") cmd
 
 -- | Directory used for haddock output.
@@ -236,6 +238,7 @@ dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg0
 
 -- TODO calc margin
 -- TODO height = statusBarHeight - distance
+-- TODO check (openDisplay "") >>= getScreenInfo
 -- | trayer command line string.
 trayerCmd :: String
 trayerCmd = "trayer"
@@ -362,32 +365,31 @@ xmobarTemplate = (\x -> if x then templ ++ ["battery"] else templ) <$> isLaptop
 xmobarTemplateSep :: String
 xmobarTemplateSep = " "
 
--- TODO xmobar on multiple screens
--- solution1: write own statusBar function which can spawn multiple status bars
--- solution2: figure out how Hooks.DynamicBars works
---
--- Keep in mind:
--- Somehow if xmobar -x1 is positioned ( with -o, -b or --p positon) it is moved to screen 0 to that position.
--- So if xmobar -x0 and xmobar -x1 have the same position, they are drawn on top of each other.
+-- | The 'IO' 'Handle' to the spawned xmobar on screen with given 'ScreenId'.
+xmobarStartup :: DynamicStatusBar
+xmobarStartup = xmobarCmd >=> spawnPipe
 
--- | Xmobar with command line options.
-xmobar' :: LayoutClass l Window => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
-xmobar' conf = xmobarCmd >>= (\c -> statusBar c xmobarFocusedPP toggleStrutsKey conf)
+-- | Kills xmobar on screen with given 'ScreenId'.
+xmobarCleanup :: DynamicStatusBarPartialCleanup
+xmobarCleanup (S id) = spawn $ "pkill -f 'xmobar.* -x '" ++ show id
 
--- | Xmobar command line string.
-xmobarCmd :: IO String
-xmobarCmd = ("xmobar ~/.xmobar/xmobarrc " ++) <$> flags
+-- | Spawns multiple xmobar instances and modifies config for status bars.
+xmobar' :: LayoutClass l Window => XConfig l -> XConfig (ModifiedLayout AvoidStruts l)
+xmobar' = dynStatusBar xmobarStartup xmobarCleanup xmobarFocusedPP xmobarUnfocusedPP
+
+-- | Xmobar command line string for given 'ScreenId'.
+xmobarCmd :: ScreenId -> IO String
+xmobarCmd (S id) = ("xmobar ~/.xmobar/xmobarrc " ++) <$> flags
   where
-    pos    = "Top"
     asep   = "}{"
     sep    = "%"
     templL = pad' sep "StdinReader"
     templR = intercalate xmobarTemplateSep . map (pad' sep) <$> xmobarTemplate
     flags  = (\tr ->
-               "-f 'xft:" ++ xftFont
+               "-x " ++ show id
+               ++ " -f 'xft:" ++ xftFont
                ++ "' -B '" ++ bg
                ++ "' -F '" ++ fg0
-               ++ "' -p '" ++ pos
                ++ "' -a '" ++ asep
                ++ "' -s '" ++ sep
                ++ "' -i '" ++ iconRoot
@@ -400,22 +402,30 @@ xmobarCmd = ("xmobar ~/.xmobar/xmobarrc " ++) <$> flags
 xmobarFocusedPP :: PP
 xmobarFocusedPP = defaultPP' xmobarColor xmobarIcon
 
--- TODO
 -- | Custom pretty printing options for xmobar on unfocused screen.
 xmobarUnfocusedPP = xmobarFocusedPP { ppTitle = const "" }
 
--- | Dzen with command line options.
-dzen' :: LayoutClass l Window => XConfig l -> IO (XConfig (ModifiedLayout AvoidStruts l))
-dzen' = statusBar dzenCmd dzenFocusedPP toggleStrutsKey
+-- | The 'IO' 'Handle' to the spawned dzen on screen with given 'ScreenId'.
+dzenStartup :: DynamicStatusBar
+dzenStartup = spawnPipe . dzenCmd
 
--- | Dzen command line string.
-dzenCmd :: String
-dzenCmd = "dzen2 " ++ flags
+-- | Kills dzen on screen with given 'ScreenId'.
+dzenCleanup :: DynamicStatusBarPartialCleanup
+dzenCleanup (S id) = spawn $ "pkill -f 'dzen2.* -xs '" ++ show id
+
+-- | Spawns multiple dzen instances and modifies config for status bars.
+dzen' :: LayoutClass l Window => XConfig l -> XConfig (ModifiedLayout AvoidStruts l)
+dzen' = dynStatusBar dzenStartup dzenCleanup dzenFocusedPP dzenUnfocusedPP
+
+-- | Dzen command line string for given 'ScreenId'.
+dzenCmd :: ScreenId-> String
+dzenCmd (S id) = "dzen2 " ++ flags
   where
     height = 20
     align  = "left"
     events = [ ("onstart", [("lower", [])]) ]
-    flags  = "-fn '" ++ xftFont
+    flags  = "-xs " ++ show id
+            ++ " -fn '" ++ xftFont
             ++ "' -bg '" ++ bg
             ++ "' -fg '" ++ fg0
             ++ "' -h '"  ++ show height
@@ -427,16 +437,24 @@ dzenCmd = "dzen2 " ++ flags
 dzenFocusedPP :: PP
 dzenFocusedPP = defaultPP' dzenColor dzenIcon
 
--- TODO
 -- | Custom pretty printing options for dzen on unfocused screen.
 dzenUnfocusedPP = dzenFocusedPP { ppTitle = const "" }
 
-{- | Key binding to hide status bar.
-
-Same as in "XMonad.Hooks.DynamicLog", since it's not exported.
--}
-toggleStrutsKey :: XConfig t -> (KeyMask, KeySym)
-toggleStrutsKey XConfig {modMask = modm} = (modm, xK_b)
+-- | Config modifier like 'XMonad.Hooks.DynamicLog.statusBar' but for dynamic
+-- status bars.
+dynStatusBar :: LayoutClass l Window
+             => DynamicStatusBar -- ^ 'ScreenId' -> 'IO' 'Handle', status bar handle for screen
+             -> DynamicStatusBarPartialCleanup -- 'IO' (), status bar cleanup function
+             -> PP -- ^ Focused 'PP'
+             -> PP -- ^ Unfocused 'PP'
+             -> XConfig l -- ^ Config to modify
+             -> XConfig (ModifiedLayout AvoidStruts l) -- ^ Modified config
+dynStatusBar start clean ppf ppu c = docks $ c
+    { layoutHook      = avoidStruts (layoutHook c)
+    , startupHook     = dynStatusBarStartup' start clean <+> startupHook c
+    , handleEventHook = dynStatusBarEventHook' start clean <+> handleEventHook c
+    , logHook         = multiPP ppf ppu <+> logHook c
+    }
 
 -- | List of additional key bindings.
 keys' :: [((KeyMask, KeySym), X ())]
@@ -473,6 +491,8 @@ keys' = [-- launch dmenu
           -- toggle horizontal and vertical reflection
           , ((modMask' .|. controlMask, xK_x), sendMessage $ Toggle REFLECTX)
           , ((modMask' .|. controlMask, xK_y), sendMessage $ Toggle REFLECTY)
+          -- hide status bar
+          , ((modMask', xK_b), sendMessage ToggleStruts)
           -- run haddock together with recompile and restart
           , ((modMask', xK_q), runHaddock >> rr)
         ]
@@ -499,21 +519,9 @@ config' = ewmh def
 {- | Main entry point.
 
 Possible status bars: 'xmobar'', 'dzen''.
-
-When using 'statusBar', the following is already
-taken care of:
-
-* Status bar spawned via 'XMonad.Util.Run.spawnPipe'
-* 'dynamicLogWithPP' added to 'logHook'
-* 'ppOutput' added to 'PP'
-* 'XMonad.Hooks.ManageDocks.avoidStruts' added to 'layoutHook'
-* 'XMonad.Hooks.ManageDocks.manageDocks' added to 'manageHook',
-'XMonad.Hooks.ManageDocks.docksEventHook' to 'handleEventHook' and
-'XMonad.Hooks.ManageDocks.docksStartupHook' to 'startupHook'
-via 'XMonad.Hooks.ManageDocks.docks' config modifier.
 -}
 main :: IO ()
-main = xmonad =<< xmobar' config'
+main = (xmonad . xmobar') config'
 
 {- | Xmobar icon string with given icon name.
 
