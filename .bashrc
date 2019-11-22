@@ -47,8 +47,8 @@ if command -v pacman > /dev/null; then
     unset a _cw
 fi
 
-# fu alias completion
-_fu() { _command_offset 1;}
+# Custom bash completion.
+complete -F _display display
 complete -F _fu fu
 
 # Get number of colors this terminal supports.
