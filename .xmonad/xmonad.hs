@@ -205,7 +205,7 @@ startupHook' = (haddockDir >>= io . createDirectoryIfMissing False)
                <+> io writeTrayerCmd
                <+> io writeDzenCmd
                <+> io writeXmobarCmd
-               <+> spawn ("sleep 1 && " ++ trayerCmd)
+               <+> spawn "pkill trayer" >> spawn ("sleep 1 && " ++ trayerCmd)
 
 -- | Write trayer command line string to file for debugging purposes.
 writeTrayerCmd :: IO()
@@ -236,9 +236,6 @@ dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg0
         ++ "' -sf '" ++ yellow ++ "' -sb '" ++ bg
         ++ "' -p '>' -fn '" ++ xftFont ++ "'"
 
--- TODO calc margin
--- TODO height = statusBarHeight - distance
--- TODO check (openDisplay "") >>= getScreenInfo
 -- | trayer command line string.
 trayerCmd :: String
 trayerCmd = "trayer"
@@ -247,11 +244,7 @@ trayerCmd = "trayer"
          ++ " --height 19"
          ++ " --distance 1"
          ++ " --widthtype request"
-         -- Using --align left with --margin, otherwise
-         -- (with --align center) trayer would show up at
-         -- the center of all connected screens.
-         ++ " --align left"
-         ++ " --margin 970"
+         ++ " --monitor primary"
          -- --tint specifies transparency color, so we use
          -- --transparent true, but --alpha 0 (opaque).
          -- Full transparency would show desktop background,
@@ -444,7 +437,7 @@ dzenUnfocusedPP = dzenFocusedPP { ppTitle = const "" }
 -- status bars.
 dynStatusBar :: LayoutClass l Window
              => DynamicStatusBar -- ^ 'ScreenId' -> 'IO' 'Handle', status bar handle for screen
-             -> DynamicStatusBarPartialCleanup -- 'IO' (), status bar cleanup function
+             -> DynamicStatusBarPartialCleanup -- ^ 'IO' (), status bar cleanup function
              -> PP -- ^ Focused 'PP'
              -> PP -- ^ Unfocused 'PP'
              -> XConfig l -- ^ Config to modify
