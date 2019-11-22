@@ -23,6 +23,8 @@ import System.Directory (getHomeDirectory,createDirectoryIfMissing)
 import System.Process (readProcess)
 
 import XMonad
+import XMonad.Actions.Minimize(minimizeWindow,withLastMinimized
+    ,maximizeWindowAndFocus)
 import XMonad.Hooks.DynamicBars(DynamicStatusBar,DynamicStatusBarPartialCleanup
     ,dynStatusBarStartup',dynStatusBarEventHook',multiPP)
 import XMonad.Hooks.DynamicLog (PP,ppCurrent,ppVisible,ppHidden
@@ -33,7 +35,7 @@ import XMonad.Hooks.ManageDocks (AvoidStruts,avoidStruts,docks,ToggleStruts(Togg
 import XMonad.Layout.Grid (Grid(Grid))
 import XMonad.Layout.LayoutModifier (ModifiedLayout) -- for type only
 import XMonad.Layout.Maximize (maximize,maximizeRestore)
--- import XMonad.Layout.Minimize (minimize,minimizeWindow,MinimizeMsg(RestoreNextMinimizedWin))
+import XMonad.Layout.Minimize (minimize)
 import XMonad.Layout.MultiColumns (multiCol)
 import XMonad.Layout.MultiToggle (Toggle(Toggle),mkToggle,single)
 import XMonad.Layout.NoBorders (Ambiguity(Screen),lessBorders)
@@ -125,13 +127,13 @@ covers the entire screen\", we use @'lessBorders' Screen@ to never draw borders
 on singleton screens. To differentiate between screen focus, we could use the
 status bar in the future. 'noBorders' can be used for specific layouts.
 
-* Added 'smartSpacing' to \"add a configurable amount of space around windows\",
+* Added 'spacingRaw' to \"add a configurable amount of space around windows\",
 \"except when the window is the only visible window on the current workspace\".
 -}
 layout' =
-    -- Cutting the layout modifiers \"Spacing Maximize\"
-    -- from the layout name. TODO There's probably a better solution.
-    renamed [CutWordsLeft 2]
+    -- Cutting the layout modifier \"Spacing Minimize Maximize\" from the layout
+    -- name. TODO There's probably a better solution.
+    renamed [CutWordsLeft 3]
 
     -- Never draw borders on singleton screens
     . lessBorders Screen
@@ -145,7 +147,7 @@ layout' =
         windowSpacing' useWindowSpacing'
 
     -- Adds possibility to minimize and restore windows
-    -- . minimize
+    . minimize
 
     -- Allow windows to be yanked out of layout
     . maximize
@@ -503,8 +505,8 @@ keys' = [-- launch dmenu
           -- maximize
           , ((modMask', xK_backslash), withFocused $ sendMessage . maximizeRestore)
           -- minimize and restore
-          -- , ((modMask', xK_m), withFocused minimizeWindow)
-          -- , ((modMask' .|. shiftMask, xK_m), sendMessage RestoreNextMinimizedWin)
+          , ((modMask', xK_m), withFocused minimizeWindow)
+          , ((modMask' .|. shiftMask, xK_m), withLastMinimized maximizeWindowAndFocus)
           -- toggle horizontal and vertical reflection
           , ((modMask' .|. controlMask, xK_x), sendMessage $ Toggle REFLECTX)
           , ((modMask' .|. controlMask, xK_y), sendMessage $ Toggle REFLECTY)
