@@ -40,7 +40,7 @@ import XMonad.Layout.NoBorders (Ambiguity(Screen),lessBorders)
 import XMonad.Layout.PerWorkspace (onWorkspace)
 import XMonad.Layout.Reflect (REFLECTX(REFLECTX),REFLECTY(REFLECTY))
 import XMonad.Layout.Renamed (renamed,Rename(CutWordsLeft,Replace))
-import XMonad.Layout.Spacing (smartSpacing)
+import XMonad.Layout.Spacing (spacingRaw,Border(Border))
 import qualified XMonad.StackSet as W -- window key bindings (e.g. additional workspace)
     (greedyView,shift,focusUp,focusDown)
 import XMonad.Util.Run (spawnPipe)
@@ -73,9 +73,25 @@ normalBorderColor', focusedBorderColor' :: C.Color
 normalBorderColor'  = bg
 focusedBorderColor' = yellow
 
+-- | When @True@ spacing is not applied if there fewer than two windows.
+useSmartSpacing' :: Bool
+useSmartSpacing' = True
+
+-- | Space around screen.
+screenSpacing' :: Border
+screenSpacing' = Border 0 0 0 0
+
+-- | Whether to enable screen spacing.
+useScreenSpacing' :: Bool
+useScreenSpacing' = False
+
 -- | Space around windows.
-spacing' :: Int
-spacing' = 5
+windowSpacing' :: Border
+windowSpacing' = Border 5 5 5 5
+
+-- | Whether to enable window spacing.
+useWindowSpacing' :: Bool
+useWindowSpacing' = True
 
 -- | Background color.
 bg :: C.Color
@@ -123,8 +139,10 @@ layout' =
     -- Set experimental layout on last workspace
     . onWorkspace (last workspaces') layoutExperimental
 
-    -- Adds custom space between windows except on singleton screens
-    . smartSpacing spacing'
+    -- Adds custom space between windows and screen
+    . spacingRaw useSmartSpacing'
+        screenSpacing' useScreenSpacing'
+        windowSpacing' useWindowSpacing'
 
     -- Adds possibility to minimize and restore windows
     -- . minimize
