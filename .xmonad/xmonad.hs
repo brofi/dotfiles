@@ -129,9 +129,9 @@ status bar in the future. 'noBorders' can be used for specific layouts.
 \"except when the window is the only visible window on the current workspace\".
 -}
 layout' =
-    -- Cutting the layout modifiers \"SmartSpacing spacing' Minimize Maximize\"
+    -- Cutting the layout modifiers \"Spacing Maximize\"
     -- from the layout name. TODO There's probably a better solution.
-    renamed [CutWordsLeft 4]
+    renamed [CutWordsLeft 2]
 
     -- Never draw borders on singleton screens
     . lessBorders Screen
@@ -414,7 +414,10 @@ xmobarFocusedPP :: PP
 xmobarFocusedPP = defaultPP' xmobarColor xmobarIcon
 
 -- | Custom pretty printing options for xmobar on unfocused screen.
-xmobarUnfocusedPP = xmobarFocusedPP { ppTitle = const "" }
+xmobarUnfocusedPP = xmobarFocusedPP
+    { ppTitle = const ""
+    , ppLayout = const ""
+    }
 
 -- | The 'IO' 'Handle' to the spawned dzen on screen with given 'ScreenId'.
 dzenStartup :: DynamicStatusBar
@@ -449,7 +452,10 @@ dzenFocusedPP :: PP
 dzenFocusedPP = defaultPP' dzenColor dzenIcon
 
 -- | Custom pretty printing options for dzen on unfocused screen.
-dzenUnfocusedPP = dzenFocusedPP { ppTitle = const "" }
+dzenUnfocusedPP = dzenFocusedPP
+    { ppTitle = const ""
+    , ppLayout = const ""
+    }
 
 -- | Config modifier like 'XMonad.Hooks.DynamicLog.statusBar' but for dynamic
 -- status bars.
