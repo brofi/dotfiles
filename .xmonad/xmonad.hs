@@ -513,7 +513,9 @@ keys' = [-- launch dmenu
           -- hide status bar
           , ((modMask', xK_b), sendMessage ToggleStruts)
           -- run haddock together with recompile and restart
-          , ((modMask', xK_q), runHaddock >> rr)
+          -- FIXME no more docs for archlinux haskell packages
+          -- , ((modMask', xK_q), runHaddock >> rr)
+          , ((modMask', xK_q), rr)
         ]
 
 -- | Override default configuration.
