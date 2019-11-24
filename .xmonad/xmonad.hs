@@ -475,6 +475,10 @@ dynStatusBar start clean ppf ppu c = docks $ c
     , logHook         = multiPP ppf ppu <+> logHook c
     }
 
+-- | List of rebinds (defaultBinding, newBinding).
+rebinds :: [((KeyMask, KeySym), (KeyMask, KeySym))]
+rebinds = [ ((modMask' .|. shiftMask, xK_space), (modMask' .|. controlMask, xK_space)) ]
+
 -- | List of additional key bindings.
 keys' :: [((KeyMask, KeySym), X ())]
 keys' = [-- launch dmenu
@@ -530,7 +534,9 @@ config' = ewmh def
     , workspaces         = workspaces'
     , normalBorderColor  = normalBorderColor'
     , focusedBorderColor = focusedBorderColor'
-    , keys               = M.union (M.fromList keys') . keys def
+    , keys               = M.union (M.fromList keys')
+                         . (\k -> foldr rewrite k rebinds)
+                         . keys def
     , layoutHook         = layout'
     , manageHook         = manageHook'
     , handleEventHook    = eventHook'
@@ -642,6 +648,24 @@ wrap' "[" "]" "myString" -> "[myString]" (same as 'wrap')@
 -}
 wrap' :: String -> String -> String -> String
 wrap' l r w = l ++ w ++ r
+
+{- | Changes a key of a map to a new key if the key to change exists and the new
+ - key doesn't.
+
+Example:
+
+> mapOfSth = fromList [(1,"sth1"),(2,"sth2"),(3,"sth3")]
+> rewrite (3,4) mapOfSth == fromList [(1,"sth1"),(2,"sth2"),(4,"sth3")]
+> rewrite (3,2) mapOfSth == mapOfSth
+> rewrite (4,1) mapOfSth == mapOfSth
+> rewrite (4,5) mapOfSth == mapOfSth
+
+-}
+rewrite :: Ord k => (k,k) -- ^ (key,newKey)
+                 -> M.Map k a -> M.Map k a
+rewrite (o,n) m = rewrite' (M.lookup o m) (M.lookup n m)
+    where rewrite' (Just a) Nothing = (M.delete o . M.insert n a) m
+          rewrite' _ _ = m
 
 {- | @True@ if the computer chassis value is 8 (Portable), 9 (Laptop),
 10 (Notebook) or 14 (Sub Notebook).
