@@ -23,9 +23,9 @@ import System.Directory (getHomeDirectory,createDirectoryIfMissing)
 import System.Process (readProcess)
 
 import XMonad hiding ((|||))
-import XMonad.Actions.Minimize(minimizeWindow,withLastMinimized
+import XMonad.Actions.Minimize (minimizeWindow,withLastMinimized
     ,maximizeWindowAndFocus)
-import XMonad.Hooks.DynamicBars(DynamicStatusBar,DynamicStatusBarPartialCleanup
+import XMonad.Hooks.DynamicBars (DynamicStatusBar,DynamicStatusBarPartialCleanup
     ,dynStatusBarStartup',dynStatusBarEventHook',multiPP)
 import XMonad.Hooks.DynamicLog (PP,ppCurrent,ppVisible,ppHidden
     ,ppHiddenNoWindows,ppUrgent,ppSep,ppWsSep,ppTitle,ppLayout,ppOrder,ppSort
@@ -33,7 +33,7 @@ import XMonad.Hooks.DynamicLog (PP,ppCurrent,ppVisible,ppHidden
 import XMonad.Hooks.EwmhDesktops (ewmh,fullscreenEventHook)
 import XMonad.Hooks.ManageDocks (AvoidStruts,avoidStruts,docks,ToggleStruts(ToggleStruts))
 import XMonad.Layout.Grid (Grid(Grid))
-import XMonad.Layout.LayoutCombinators((|||),JumpToLayout(JumpToLayout))
+import XMonad.Layout.LayoutCombinators ((|||),JumpToLayout(JumpToLayout))
 import XMonad.Layout.LayoutModifier (ModifiedLayout) -- for type only
 import XMonad.Layout.Maximize (maximize,maximizeRestore)
 import XMonad.Layout.Minimize (minimize)
@@ -46,6 +46,8 @@ import XMonad.Layout.Renamed (renamed,Rename(CutWordsLeft,Replace))
 import XMonad.Layout.Spacing (spacingRaw,Border(Border))
 import qualified XMonad.StackSet as W -- window key bindings (e.g. additional workspace)
     (greedyView,shift,focusUp,focusDown)
+import XMonad.Prompt (XPConfig(..),XPPosition(Bottom))
+import XMonad.Prompt.Shell (shellPrompt)
 import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.WorkspaceCompare (getSortByIndex) -- ppSort
 
@@ -53,7 +55,6 @@ import XMonad.Util.WorkspaceCompare (getSortByIndex) -- ppSort
 -- import XMonad.Layout.IM
 -- import XMonad.Layout.Magnifier
 import XMonad.Layout.Tabbed
-
 
 -- | List of workspace names.
 workspaces' :: [WorkspaceId]
@@ -256,6 +257,23 @@ dmenu :: String
 dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg0
         ++ "' -sf '" ++ yellow ++ "' -sb '" ++ bg
         ++ "' -p '>' -fn '" ++ xftFont ++ "'"
+
+-- | dmenu-like config for 'XMonad.Prompt.Shell'.
+shellPromptConfig :: XPConfig
+shellPromptConfig = def
+    { font = "xft:" ++ xftFont
+    , bgColor = bg
+    , fgColor = fg0
+    , bgHLight = bg
+    , fgHLight = yellow
+    , borderColor = bg
+    , promptBorderWidth = 0
+    , position = Bottom
+    , alwaysHighlight = True
+    , height = 20
+    , maxComplRows = Just 1
+    , defaultPrompter = const "> "
+    }
 
 -- | trayer command line string.
 trayerCmd :: String
@@ -484,6 +502,8 @@ rebinds = [ ((modMask' .|. shiftMask, xK_space), (modMask' .|. controlMask, xK_s
 keys' :: [((KeyMask, KeySym), X ())]
 keys' = [-- launch dmenu
             ((modMask', xK_p), spawn dmenu)
+          -- dmenu-like xmonad prompt
+          , ((modMask', xK_o), shellPrompt shellPromptConfig)
           -- print screen
           , ((0, xK_Print), spawn "scrot")
           -- additional key binding 0 -> /dev/null
@@ -653,7 +673,7 @@ wrap' :: String -> String -> String -> String
 wrap' l r w = l ++ w ++ r
 
 {- | Changes a key of a map to a new key if the key to change exists and the new
- - key doesn't.
+key doesn't.
 
 Example:
 
