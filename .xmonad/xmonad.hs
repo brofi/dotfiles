@@ -22,7 +22,7 @@ import Graphics.X11.ExtraTypes.XF86 -- to use xF86XK_* in key bindings
 import System.Directory (getHomeDirectory,createDirectoryIfMissing)
 import System.Process (readProcess)
 
-import XMonad
+import XMonad hiding ((|||))
 import XMonad.Actions.Minimize(minimizeWindow,withLastMinimized
     ,maximizeWindowAndFocus)
 import XMonad.Hooks.DynamicBars(DynamicStatusBar,DynamicStatusBarPartialCleanup
@@ -33,6 +33,7 @@ import XMonad.Hooks.DynamicLog (PP,ppCurrent,ppVisible,ppHidden
 import XMonad.Hooks.EwmhDesktops (ewmh,fullscreenEventHook)
 import XMonad.Hooks.ManageDocks (AvoidStruts,avoidStruts,docks,ToggleStruts(ToggleStruts))
 import XMonad.Layout.Grid (Grid(Grid))
+import XMonad.Layout.LayoutCombinators((|||),JumpToLayout(JumpToLayout))
 import XMonad.Layout.LayoutModifier (ModifiedLayout) -- for type only
 import XMonad.Layout.Maximize (maximize,maximizeRestore)
 import XMonad.Layout.Minimize (minimize)
@@ -514,6 +515,8 @@ keys' = [-- launch dmenu
           -- toggle horizontal and vertical reflection
           , ((modMask' .|. controlMask, xK_x), sendMessage $ Toggle REFLECTX)
           , ((modMask' .|. controlMask, xK_y), sendMessage $ Toggle REFLECTY)
+          -- jump directly to layout "Full"
+          , ((modMask' .|. shiftMask, xK_space), sendMessage $ JumpToLayout "Full")
           -- hide status bar
           , ((modMask', xK_b), sendMessage ToggleStruts)
           -- run haddock together with recompile and restart
