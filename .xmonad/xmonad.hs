@@ -47,6 +47,7 @@ import XMonad.Layout.Spacing (spacingRaw,Border(Border))
 import qualified XMonad.StackSet as W -- window key bindings (e.g. additional workspace)
     (greedyView,shift,focusUp,focusDown)
 import XMonad.Prompt (XPConfig(..),XPPosition(Bottom))
+import XMonad.Prompt.FuzzyMatch (fuzzyMatch,fuzzySort)
 import XMonad.Prompt.Shell (shellPrompt)
 import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.WorkspaceCompare (getSortByIndex) -- ppSort
@@ -272,7 +273,9 @@ shellPromptConfig = def
     , alwaysHighlight = True
     , height = 20
     , maxComplRows = Just 1
+    , searchPredicate = fuzzyMatch
     , defaultPrompter = const "> "
+    , sorter = fuzzySort
     }
 
 -- | trayer command line string.
