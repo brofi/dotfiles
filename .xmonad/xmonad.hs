@@ -14,12 +14,14 @@ module Main where
 
 import Colors as C
 
-import Control.Monad (liftM,(>=>))
+import Control.Monad (liftM,(>=>),when)
+import Data.Char (toLower)
 import Data.List (intercalate)
 import Data.Monoid (All) -- for type only
 import qualified Data.Map as M
 import Graphics.X11.ExtraTypes.XF86 -- to use xF86XK_* in key bindings
 import System.Directory (getHomeDirectory,createDirectoryIfMissing)
+import System.Exit (exitSuccess)
 import System.Process (readProcess)
 
 import XMonad hiding ((|||))
@@ -46,7 +48,8 @@ import XMonad.Layout.Renamed (renamed,Rename(CutWordsLeft,Replace))
 import XMonad.Layout.Spacing (spacingRaw,Border(Border))
 import qualified XMonad.StackSet as W -- window key bindings (e.g. additional workspace)
     (greedyView,shift,focusUp,focusDown)
-import XMonad.Prompt (XPConfig(..),XPPosition(Bottom))
+import XMonad.Prompt (XPrompt(showXPrompt),XPConfig(..),XPPosition(Bottom)
+    ,mkXPrompt,mkComplFunFromList)
 import XMonad.Prompt.FuzzyMatch (fuzzyMatch,fuzzySort)
 import XMonad.Prompt.Shell (shellPrompt)
 import XMonad.Prompt.Window (windowPrompt,WindowPrompt(Goto),allWindows)
@@ -259,25 +262,6 @@ dmenu :: String
 dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg0
         ++ "' -sf '" ++ yellow ++ "' -sb '" ++ bg
         ++ "' -p '>' -fn '" ++ xftFont ++ "'"
-
--- | dmenu-like config for 'XMonad.Prompt'.
-promptConfig:: XPConfig
-promptConfig = def
-    { font = "xft:" ++ xftFont
-    , bgColor = bg
-    , fgColor = fg0
-    , bgHLight = bg
-    , fgHLight = yellow
-    , borderColor = bg
-    , promptBorderWidth = 0
-    , position = Bottom
-    , alwaysHighlight = True
-    , height = 20
-    , maxComplRows = Just 1
-    , searchPredicate = fuzzyMatch
-    , defaultPrompter = const "> "
-    , sorter = fuzzySort
-    }
 
 -- | trayer command line string.
 trayerCmd :: String
@@ -507,9 +491,9 @@ keys' :: [((KeyMask, KeySym), X ())]
 keys' = [-- launch dmenu
             ((modMask', xK_p), spawn dmenu)
           -- dmenu-like xmonad prompt
-          , ((modMask', xK_o), shellPrompt promptConfig)
+          , ((modMask', xK_o), shellPrompt promptConfigFuzzy)
           -- goto window prompt
-          , ((modMask', xK_i), windowPrompt promptConfig Goto allWindows)
+          , ((modMask', xK_i), windowPrompt promptConfigFuzzy Goto allWindows)
           -- print screen
           , ((0, xK_Print), spawn "scrot")
           -- additional key binding 0 -> /dev/null
@@ -549,7 +533,46 @@ keys' = [-- launch dmenu
           -- FIXME no more docs for archlinux haskell packages
           -- , ((modMask', xK_q), runHaddock >> rr)
           , ((modMask', xK_q), rr)
+          -- ask before exiting
+          , ((modMask' .|. shiftMask, xK_q), ynPrompt promptConfig "Quit?" $ io exitSuccess)
         ]
+
+-- | Yes/No Prompt type instance of 'XPrompt'.
+newtype YNPrompt = YNPrompt String
+instance XPrompt YNPrompt where
+    showXPrompt (YNPrompt title) = title ++ " "
+
+-- | Creates Yes/No Prompt.
+ynPrompt :: XPConfig -- ^ Config
+         -> String -- ^ Title
+         -> X () -- ^ Action for input "y" or "Y"
+         -> X ()
+ynPrompt c t a = mkXPrompt (YNPrompt t) c (mkComplFunFromList []) ynAction
+    where ynAction s = when (length s == 1 && (toLower . head) s == 'y') a
+
+-- | Base 'XMonad.Prompt' config.
+promptConfig:: XPConfig
+promptConfig = def
+    { font = "xft:" ++ xftFont
+    , bgColor = bg
+    , fgColor = fg0
+    , bgHLight = bg
+    , fgHLight = yellow
+    , borderColor = bg
+    , promptBorderWidth = 0
+    , position = Bottom
+    , height = 20
+    , defaultPrompter = ("> " ++)
+    }
+
+-- | One-line 'XMonad.Prompt' config with with 'XMonad.Prompt.FuzzyMatch'.
+promptConfigFuzzy:: XPConfig
+promptConfigFuzzy = promptConfig
+    { alwaysHighlight = True
+    , maxComplRows = Just 1
+    , searchPredicate = fuzzyMatch
+    , sorter = fuzzySort
+    }
 
 -- | Override default configuration.
 
