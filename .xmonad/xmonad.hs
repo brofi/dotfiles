@@ -49,6 +49,7 @@ import qualified XMonad.StackSet as W -- window key bindings (e.g. additional wo
 import XMonad.Prompt (XPConfig(..),XPPosition(Bottom))
 import XMonad.Prompt.FuzzyMatch (fuzzyMatch,fuzzySort)
 import XMonad.Prompt.Shell (shellPrompt)
+import XMonad.Prompt.Window (windowPrompt,WindowPrompt(Goto),allWindows)
 import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.WorkspaceCompare (getSortByIndex) -- ppSort
 
@@ -259,9 +260,9 @@ dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg0
         ++ "' -sf '" ++ yellow ++ "' -sb '" ++ bg
         ++ "' -p '>' -fn '" ++ xftFont ++ "'"
 
--- | dmenu-like config for 'XMonad.Prompt.Shell'.
-shellPromptConfig :: XPConfig
-shellPromptConfig = def
+-- | dmenu-like config for 'XMonad.Prompt'.
+promptConfig:: XPConfig
+promptConfig = def
     { font = "xft:" ++ xftFont
     , bgColor = bg
     , fgColor = fg0
@@ -506,7 +507,9 @@ keys' :: [((KeyMask, KeySym), X ())]
 keys' = [-- launch dmenu
             ((modMask', xK_p), spawn dmenu)
           -- dmenu-like xmonad prompt
-          , ((modMask', xK_o), shellPrompt shellPromptConfig)
+          , ((modMask', xK_o), shellPrompt promptConfig)
+          -- goto window prompt
+          , ((modMask', xK_i), windowPrompt promptConfig Goto allWindows)
           -- print screen
           , ((0, xK_Print), spawn "scrot")
           -- additional key binding 0 -> /dev/null
