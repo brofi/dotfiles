@@ -539,7 +539,7 @@ keys' = [-- launch dmenu
           -- lock screen
           , ((modMask' .|. shiftMask, xK_l), spawn "xscreensaver-command -lock")
           -- ask before exiting
-          , ((modMask' .|. shiftMask, xK_q), ynPrompt promptConfig "Quit?" $ io exitSuccess)
+          , ((modMask' .|. shiftMask, xK_q), ynPrompt' promptConfig "Quit?" $ io exitSuccess)
         ]
 
 -- | Yes/No Prompt type instance of 'XPrompt'.
@@ -547,13 +547,24 @@ newtype YNPrompt = YNPrompt String
 instance XPrompt YNPrompt where
     showXPrompt (YNPrompt title) = title ++ " "
 
--- | Creates Yes/No Prompt.
-ynPrompt :: XPConfig -- ^ Config
-         -> String -- ^ Title
-         -> X () -- ^ Action for input "y" or "Y"
+{- | Creates a Yes/No Prompt. Positive input values are "y", "Y" and "" if no
+input should be considered positive input.
+-}
+ynPrompt :: XPConfig -- ^ config
+         -> Bool     -- ^ if no input means yes
+         -> String   -- ^ title
+         -> X ()     -- ^ action for positive input
          -> X ()
-ynPrompt c t a = mkXPrompt (YNPrompt t) c (mkComplFunFromList []) ynAction
-    where ynAction s = when (length s == 1 && (toLower . head) s == 'y') a
+ynPrompt c e t a = mkXPrompt (YNPrompt t) c (mkComplFunFromList []) ynAction
+    where ynAction [] = when e a
+          ynAction s  = when (length s == 1 && (toLower . head) s == 'y') a
+
+-- | Creates a Yes/No Prompt. Positive input values are "y", "Y" and "".
+ynPrompt' :: XPConfig -- ^ config
+          -> String   -- ^ title
+          -> X ()     -- ^ action for positive input
+          -> X ()
+ynPrompt' = flip ynPrompt True
 
 -- | Base 'XMonad.Prompt' config.
 promptConfig:: XPConfig
