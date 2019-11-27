@@ -217,6 +217,9 @@ manageHook' = composeAll
 
 Compose event hooks with '<+>'.
 
+TODO use ewmhFullscreen once 0.17 is released
+see: https://github.com/xmonad/xmonad-contrib/blob/master/CHANGES.md
+
 Added 'fullscreenEventHook' to \"handle applications that wish to fullscreen using
 the @_NET_WM_STATE@ protocol\".
 -}
