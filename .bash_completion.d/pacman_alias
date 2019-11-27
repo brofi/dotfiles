@@ -1,0 +1,20 @@
+#!/bin/bash
+# pacman alias completion.
+
+if command -v pacman > /dev/null; then
+    # Set up dynamic completion loading for pacman, so we don't have to source
+    # /usr/share/bash-completion/completions/pacman
+    _completion_loader pacman
+
+    for a in S Sy Syy Su Syu Syyu Qnn R Rs Rnn; do
+        # Store completion words for aliased command in cw
+        _alias_comp_words $a _cw
+        # Create a wrapper function and use it to complete the alias
+        # shellcheck disable=SC2154
+        _alias_comp_wrapper _pacman "_pacman_$a" $a "${_cw[@]}"
+        complete -o default -F "_pacman_$a" $a
+    done
+    unset a _cw
+fi
+
+# vim: set filetype=sh:

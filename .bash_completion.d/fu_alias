@@ -1,0 +1,7 @@
+#!/bin/bash
+# fu alias completion.
+
+_fu() { _command_offset 1;}
+complete -F _fu fu
+
+# vim: set filetype=sh:

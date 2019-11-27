@@ -26,30 +26,19 @@ HISTFILESIZE=2000
 for f in ~/.bash_{aliases,functions}; do
     [ -f "$f" ] && . "$f"
 done
+unset f
+
+# Source custom completion functions from ~/.bash_completion.d which are not
+# sourced by /usr/share/bash-completion/bash_completion.
+if [ -d ~/.bash_completion.d ] ; then
+    for f in ~/.bash_completion.d/*; do
+        [ -f "$f" ] && . "$f"
+    done
+    unset f
+fi
 
 # Set up Node Version Manager
 [ -f /usr/share/nvm/init-nvm.sh ] && . /usr/share/nvm/init-nvm.sh
-
-# pacman alias completion
-if command -v pacman > /dev/null; then
-    # Set up dynamic completion loading for pacman, so we don't have to source
-    # /usr/share/bash-completion/completions/pacman
-    _completion_loader pacman
-
-    for a in S Sy Syy Su Syu Syyu Qnn R Rs Rnn; do
-        # Store completion words for aliased command in cw
-        _alias_comp_words $a _cw
-        # Create a wrapper function and use it to complete the alias
-        # shellcheck disable=SC2154
-        _alias_comp_wrapper _pacman "_pacman_$a" $a "${_cw[@]}"
-        complete -o default -F "_pacman_$a" $a
-    done
-    unset a _cw
-fi
-
-# Custom bash completion.
-complete -F _display display
-complete -F _fu fu
 
 # Get number of colors this terminal supports.
 # Make sure $TERM is set correctly at this point.

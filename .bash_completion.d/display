@@ -1,0 +1,71 @@
+#!/bin/bash
+# ~/bin/display completion.
+
+# shellcheck disable=SC2207
+_display() {
+    local cur prev words cword
+    _init_completion || return
+
+    if [ "$cword" -eq 1 ]; then
+        # complete possible commands for display script (see: display help)
+        COMPREPLY=($(compgen -W 'clone extend only list help' -- "$cur"))
+        return
+    fi
+
+    # without xrandr we won't list possible outputs
+    if ! command -v xrandr > /dev/null; then
+        return
+    fi
+
+    # get connected ouputs
+    local outputs
+    _IFS=$IFS; IFS=$'\n'
+    outputs=($(xrandr | sed -n 's/\(.*\)[[:space:]]connected.*/\1/p'))
+    IFS=$_IFS
+
+    # only 'clone', 'extend' and 'only' commands can have an output
+    if [ "$cword" -eq 2 ]; then
+        case $prev in
+            clone|extend|only)
+                # complete connected outputs
+                COMPREPLY=($(compgen -W "$(printf '%s\n' "${outputs[@]}")" -- "$cur"))
+                return;;
+        esac
+    fi
+
+    # only 'clone' and 'extend' commands can have more than 1 output
+    if [ "$cword" -ge 3 ]; then
+        case "${words[1]}" in
+            clone|extend)
+                # only the 'extend' command can have excaclty one primary output
+                # marked with '--primary'
+                if [ "${words[1]}" = 'extend' ] && [ "$cur" = '-' ]; then
+                    for w in "${words[@]:2}"; do
+                        if [ "$w" = "--primary" ]; then
+                            return
+                        fi
+                    done
+                    # complete '--primary'
+                    COMPREPLY=($(compgen -W "--primary" -- "$cur"))
+                    return
+                fi
+                # don't list outputs already specified on the command line
+                for w in "${words[@]:2}"; do
+                    if xrandr | grep -qe "$w connected"; then
+                        for i in "${!outputs[@]}"; do
+                            if [ "${outputs[$i]}" = "$w" ]; then
+                                unset "outputs[$i]"
+                                break
+                            fi
+                        done
+                    fi
+                done
+                # complete remaining connected outputs
+                COMPREPLY=($(compgen -W "$(printf '%s\n' "${outputs[@]}")" -- "$cur"))
+                return;;
+        esac
+    fi
+}
+complete -F _display display
+
+# vim: set filetype=sh:
