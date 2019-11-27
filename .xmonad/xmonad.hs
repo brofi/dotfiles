@@ -27,6 +27,8 @@ import System.Process (readProcess)
 import XMonad hiding ((|||))
 import XMonad.Actions.Minimize (minimizeWindow,withLastMinimized
     ,maximizeWindowAndFocus)
+import XMonad.Actions.PhysicalScreens(viewScreen,sendToScreen
+    ,horizontalScreenOrderer)
 import XMonad.Hooks.DynamicBars (DynamicStatusBar,DynamicStatusBarPartialCleanup
     ,dynStatusBarStartup',dynStatusBarEventHook',multiPP)
 import XMonad.Hooks.DynamicLog (PP,ppCurrent,ppVisible,ppHidden
@@ -540,6 +542,15 @@ keys' = [-- launch dmenu
           , ((modMask' .|. shiftMask, xK_l), spawn "xscreensaver-command -lock")
           -- ask before exiting
           , ((modMask' .|. shiftMask, xK_q), ynPrompt' promptConfig "Quit?" $ io exitSuccess)
+        ]
+        ++
+        -- 'XMonad.Actions.PhysicalScreens' version of:
+        -- mod-{w,e,r} %! Switch to physical/Xinerama screens 1, 2, or 3
+        -- mod-shift-{w,e,r} %! Move client to screen 1, 2, or 3
+        [((modMask' .|. mask, key), f sc)
+            | (key, sc) <- zip [xK_w, xK_e, xK_r] [0..]
+            , (f, mask) <- [(viewScreen horizontalScreenOrderer, 0)
+                , (sendToScreen horizontalScreenOrderer, shiftMask)]
         ]
 
 -- | Yes/No Prompt type instance of 'XPrompt'.
