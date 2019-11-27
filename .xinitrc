@@ -3,6 +3,7 @@
 # shellcheck source=.xinitrc_base
 . ~/.xinitrc_base
 
+xscreensaver &
 compton -b
 udiskie &
 mpd ~/.mpd/mpd.conf &

@@ -533,6 +533,8 @@ keys' = [-- launch dmenu
           -- FIXME no more docs for archlinux haskell packages
           -- , ((modMask', xK_q), runHaddock >> rr)
           , ((modMask', xK_q), rr)
+          -- lock screen
+          , ((modMask' .|. shiftMask, xK_l), spawn "xscreensaver-command -lock")
           -- ask before exiting
           , ((modMask' .|. shiftMask, xK_q), ynPrompt promptConfig "Quit?" $ io exitSuccess)
         ]

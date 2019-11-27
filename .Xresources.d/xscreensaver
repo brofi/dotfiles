@@ -1,0 +1,53 @@
+! XScreenSaver resources
+!
+! Generate settings to ~/.xsettings with xscreensaver-demo -prefs.
+
+xscreensaver.timeout: 0:15:00
+xscreensaver.cycle: 0:10:00
+xscreensaver.lock: true
+xscreensaver.lockTimeout: 0:00:10
+xscreensaver.newLoginCommand:
+xscreensaver.fade: false
+xscreensaver.fadeSeconds: 0
+! Options e.g: one, blank, off
+xscreensaver.mode: one
+! When mode: one
+xscreensaver.selected: 205
+
+! Stop complaining about missing fallback fonts
+#define XSC_DIALOG_FONT *-medium-r-*-120-*-m-*
+xscreensaver.Dialog.headingFont: XSC_DIALOG_FONT
+xscreensaver.Dialog.bodyFont: XSC_DIALOG_FONT
+xscreensaver.Dialog.labelFont: XSC_DIALOG_FONT
+xscreensaver.Dialog.unameFont: XSC_DIALOG_FONT
+xscreensaver.Dialog.buttonFont: XSC_DIALOG_FONT
+xscreensaver.Dialog.dateFont: XSC_DIALOG_FONT
+xscreensaver.passwd.passwdFont: XSC_DIALOG_FONT
+
+! Splash options
+xscreensaver.splash: false
+xscreensaver.splashDuration: 0:00:00
+xscreensaver.splash.heading.label:
+xscreensaver.splash.body.label:
+xscreensaver.splash.body2.label:
+
+! Ugly dialog options
+xscreensaver.dateFormat:
+xscreensaver.passwd.body.label:
+xscreensaver.passwd.heading.label:
+xscreensaver.passwd.unlock.label: Login
+xscreensaver.passwd.thermometer.width: 5
+xscreensaver.passwd.thermometer.foreground: FOREGROUND
+xscreensaver.passwd.thermometer.background: BACKGROUND_SOFT
+xscreensaver.Dialog.foreground: FOREGROUND
+xscreensaver.Dialog.background: BACKGROUND
+xscreensaver.Dialog.text.foreground: FOREGROUND
+xscreensaver.Dialog.text.background: BACKGROUND_SOFT
+xscreensaver.Dialog.Button.background: BACKGROUND_SOFT
+xscreensaver.Dialog.Button.foreground: FOREGROUND
+xscreensaver.Dialog.shadowThickness: 1
+xscreensaver.Dialog.topShadowColor: BACKGROUND
+xscreensaver.Dialog.bottomShadowColor: BACKGROUND
+xscreensaver.Dialog.borderWidth: 0
+
+! vim: set ft=xdefaults:

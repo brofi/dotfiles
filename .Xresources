@@ -3,6 +3,7 @@ Xcursor.theme: Simple-and-Soft
 
 #include ".Xresources.d/urxvt"
 #include ".Xresources.d/xterm"
+#include ".Xresources.d/xscreensaver"
 
 ! General resources
 *cursorBlink: true
