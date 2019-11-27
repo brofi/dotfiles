@@ -49,7 +49,7 @@ import XMonad.Layout.Spacing (spacingRaw,Border(Border))
 import qualified XMonad.StackSet as W -- window key bindings (e.g. additional workspace)
     (greedyView,shift,focusUp,focusDown)
 import XMonad.Prompt (XPrompt(showXPrompt),XPConfig(..),XPPosition(Bottom)
-    ,mkXPrompt,mkComplFunFromList)
+    ,mkXPrompt,mkComplFunFromList,defaultXPKeymap)
 import XMonad.Prompt.FuzzyMatch (fuzzyMatch,fuzzySort)
 import XMonad.Prompt.Shell (shellPrompt)
 import XMonad.Prompt.Window (windowPrompt,WindowPrompt(Goto),allWindows)
@@ -579,6 +579,8 @@ promptConfig = def
     , position = Bottom
     , height = 20
     , defaultPrompter = ("> " ++)
+    , promptKeymap =
+        rewrite ((controlMask, xK_g), (controlMask, xK_d)) defaultXPKeymap
     }
 
 -- | One-line 'XMonad.Prompt' config with with 'XMonad.Prompt.FuzzyMatch'.
