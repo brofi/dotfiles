@@ -1,14 +1,11 @@
-! Background (normal contrast)
-! *background: #282828
+#define BACKGROUND_NORMAL #282828
+#define BACKGROUND_HARD #1d2021
+#define BACKGROUND_SOFT #32302f
 
-! Background (hard contrast)
-*background: #1d2021
-
-! Background (soft contrast)
-! *background: #32302f
-
-! Foreground
-*foreground: #ebdbb2
+#define BACKGROUND BACKGROUND_HARD
+*background: BACKGROUND
+#define FOREGROUND #ebdbb2
+*foreground: FOREGROUND
 
 ! Black + DarkGrey
 *color0:  #282828

@@ -65,6 +65,42 @@ function get_colors_manually {
 
     # TODO check for new includes.
 
+    local defineP='^[[:blank:]]*#[[:blank:]]*define[[:blank:]]\+\([[:alnum:]_]\+\)[[:blank:]]\+\(.*\)'
+    _IFS=$IFS; IFS=$'\n'
+    # Get all Xresources define statements in format 'name value'.
+    defines=($(sed -n 's/'"$defineP"'/\1 \2/p' "$xres_tmp"))
+    IFS=$_IFS
+
+    # Remove define statements.
+    sed -i '/'"$defineP"'/ d' "$xres_tmp"
+
+    # We could have define statements like:
+    # #define BACKROUND2 #000000
+    # #define BACKROUND BACKGROUND2
+    local flattened=false
+    while ! $flattened; do
+        flattened=true
+        for i in "${!defines[@]}"; do
+            local val=${defines[$i]##* }
+            local name=${defines[$i]%% *}
+            # If the define value occurs as a name in the list of defines,
+            # replace the value with the new found value.
+            for j in "${!defines[@]}"; do
+                if [ "$val" = "${defines[$j]%% *}" ]; then
+                    defines[$i]="$name ${defines[$j]##* }"
+                    flattened=false
+                fi
+            done
+        done
+    done
+
+    # Replace all define names with their value.
+    for d in "${defines[@]}"; do
+        local val=${d##* }
+        local name=${d%% *}
+        sed -i 's/\(.*:[[:blank:]]*\)'"$name"'\(.*\)/\1'"$val"'\2/' "$xres_tmp"
+    done
+
     # Remove comments, then trailing tabs and spaces, then empty lines and leave
     # only color definitions in format n:x , n <- [0-9]{1,2}, x <- [[:xdigit:]]{6}.
     sed -n \
