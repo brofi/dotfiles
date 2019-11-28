@@ -4,7 +4,7 @@
 
 xscreensaver.timeout: 0:15:00
 xscreensaver.cycle: 0:10:00
-xscreensaver.lock: true
+xscreensaver.lock: false
 xscreensaver.lockTimeout: 0:00:10
 xscreensaver.newLoginCommand:
 xscreensaver.fade: false

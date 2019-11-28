@@ -539,7 +539,7 @@ keys' = [-- launch dmenu
           -- , ((modMask', xK_q), runHaddock >> rr)
           , ((modMask', xK_q), rr)
           -- lock screen
-          , ((modMask' .|. shiftMask, xK_l), spawn "xscreensaver-command -lock")
+          , ((modMask' .|. shiftMask, xK_l), spawn "physlock -ms -p $(whoami)@$(hostname)")
           -- ask before exiting
           , ((modMask' .|. shiftMask, xK_q), ynPrompt' promptConfig "Quit?" $ io exitSuccess)
         ]
