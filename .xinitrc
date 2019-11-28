@@ -6,7 +6,6 @@
 xscreensaver &
 compton -b
 udiskie &
-mpd ~/.mpd/mpd.conf &
 dropbox &
 skypeforlinux &
 pidgin &
