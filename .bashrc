@@ -37,8 +37,20 @@ if [ -d ~/.bash_completion.d ] ; then
     unset f
 fi
 
-# Set up Node Version Manager
-[ -f /usr/share/nvm/init-nvm.sh ] && . /usr/share/nvm/init-nvm.sh
+# Set up Node Version Manager when the first node related binary is executed.
+init_nvm=/usr/share/nvm/init-nvm.sh
+if [ -f "$init_nvm" ]; then
+    # Get all node related binaries.
+    mapfile -t bins < <(find ~/.nvm/versions/node -maxdepth 3 -path '*/bin/*' \
+        -exec basename '{}' \; -exec printf 'node\nnvm\n' \; | sort -u)
+    # Set up functions that mask the binaries. When called, the functions are
+    # torn down again and the arguments are passed to the actual command after
+    # initializing NVM.
+    for b in "${bins[@]}"; do
+        eval "$b(){ printf 'Initializing NVM...\\n'; unset -f ${bins[*]}
+                . $init_nvm; printf '...done\\n'; $b \"\$@\";}"
+    done; unset bins
+fi; unset init_nvm
 
 # Get number of colors this terminal supports.
 # Make sure $TERM is set correctly at this point.
