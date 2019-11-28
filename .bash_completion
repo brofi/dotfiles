@@ -75,10 +75,11 @@ function _alias_comp_words {
     local cmd=()
     local cmd_sub=""
     local cmd_sub_cnt=0
+    local w
     for w in $(alias "$1" | sed "s/.*='\\(\\bsudo \\b\\)\\?\\(.*\\)'/\\2/"); do
         # No negative lookbehind required since the opening bracket needs to be
         # escaped if '$(' should be literal when executing the alias
-        if grep "\$(" <<< "$w" > /dev/null; then
+        if [[ $w = *"\$("* ]]; then
             (( cmd_sub_cnt+=$(grep -o "\$(" <<< "$w" | wc -l) ))
         fi
         if [ $cmd_sub_cnt -gt 0 ]; then
