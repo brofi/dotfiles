@@ -15,6 +15,14 @@
 # ue      rmul      stop underline
 # }}}
 man() {
+    # Terminfo for $TERM might be unknown.
+    if ! [ -x "$(command -v tput)" ] \
+        || ! tput setaf 1 > /dev/null 2>&1 \
+        || ! tput colors > /dev/null 2>&1; then
+            command man "$@"
+            return
+    fi
+
     local red=1
     local green=2
     local yellow=3
