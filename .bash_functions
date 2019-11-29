@@ -15,12 +15,14 @@
 # ue      rmul      stop underline
 # }}}
 man() {
-    # Terminfo for $TERM might be unknown.
-    if ! [ -x "$(command -v tput)" ] \
-        || ! tput setaf 1 > /dev/null 2>&1 \
-        || ! tput colors > /dev/null 2>&1; then
-            command man "$@"
-            return
+    tput setaf 1 > /dev/null 2>&1 && tput colors > /dev/null 2>&1
+    local ret=$?
+    if [ $ret -eq 3 ]; then
+        # Terminal $TERM unknown, e.g. when using ssh in urxvt and remote
+        # doesn't know terminal 'rxvt-unicode-256color'.
+        env TERM=linux man "$@"; return
+    elif [ $ret -ne 0 ]; then
+        command man "$@"; return
     fi
 
     local red=1
