@@ -427,7 +427,6 @@ if has('win32') || has('win32unix')
         let g:vimtex_view_general_options
                     \ = '-reuse-instance'
                     \ . ' -forward-search @tex @line @pdf'
-        let g:vimtex_view_general_options_latexmk = '-reuse-instance'
 
         "Setup inverse search (not for Cygwin, because clientserver is not
         "available).
@@ -465,7 +464,7 @@ let g:vimtex_compiler_latexmk = {
 \}
 
 "Disable overfull/underfull \hbox and all package warnings.
-let g:vimtex_quickfix_latexlog = {
+let g:vimtex_quickfix_ignore_filters = {
     \ 'overfull' : 0,
     \ 'underfull' : 0,
     \ 'packages' : {
