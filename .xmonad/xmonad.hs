@@ -22,6 +22,7 @@ import qualified Data.Map as M
 import Graphics.X11.ExtraTypes.XF86 -- to use xF86XK_* in key bindings
 import System.Directory (getHomeDirectory,createDirectoryIfMissing)
 import System.Exit (exitSuccess)
+import System.FilePath ((</>))
 import System.Process (readProcess)
 
 import XMonad hiding ((|||))
@@ -34,7 +35,7 @@ import XMonad.Hooks.DynamicBars (DynamicStatusBar,DynamicStatusBarPartialCleanup
 import XMonad.Hooks.DynamicLog (PP,ppCurrent,ppVisible,ppHidden
     ,ppHiddenNoWindows,ppUrgent,ppSep,ppWsSep,ppTitle,ppLayout,ppOrder,ppSort
     ,ppExtras,xmobarColor,dzenColor,shorten,pad,wrap)
-import XMonad.Hooks.EwmhDesktops (ewmh,fullscreenEventHook)
+import XMonad.Hooks.EwmhDesktops (ewmh,ewmhFullscreen)
 import XMonad.Hooks.ManageDocks (AvoidStruts,avoidStruts,docks,ToggleStruts(ToggleStruts))
 import XMonad.Layout.Grid (Grid(Grid))
 import XMonad.Layout.LayoutCombinators ((|||),JumpToLayout(JumpToLayout))
@@ -215,48 +216,43 @@ manageHook' = composeAll
                 , className =? "Steam"        --> doFloat
                 , className =? "csgo_linux64" --> doShift "9" ]
 
-{- | Custom 'handleEventHook'.
-
-Compose event hooks with '<+>'.
-
-TODO use ewmhFullscreen once 0.17 is released
-see: https://github.com/xmonad/xmonad-contrib/blob/master/CHANGES.md
-
-Added 'fullscreenEventHook' to \"handle applications that wish to fullscreen using
-the @_NET_WM_STATE@ protocol\".
--}
-eventHook' :: Event -> X All
-eventHook' = fullscreenEventHook
-
 {- | Custom 'startupHook'.
 
 Combine actions with '<+>'.
 -}
 startupHook' :: X ()
-startupHook' = (haddockDir >>= io . createDirectoryIfMissing False)
+startupHook' = io (haddockDir >>= createDirectoryIfMissing False)
                <+> io writeTrayerCmd
                <+> io writeDzenCmd
                <+> io writeXmobarCmd
                <+> spawn "pkill trayer" >> spawn ("sleep 1 && " ++ trayerCmd)
 
 -- | Write trayer command line string to file for debugging purposes.
-writeTrayerCmd :: IO()
-writeTrayerCmd = getXMonadDir >>= (\d -> writeFile (d ++ "/.trayerCmd") trayerCmd)
+writeTrayerCmd :: IO ()
+writeTrayerCmd = pathInCfg ".trayerCmd" >>= flip writeFile trayerCmd
 
 -- | Write dzen command line string to file for debugging purposes.
-writeDzenCmd :: IO()
-writeDzenCmd = getXMonadDir >>= (\d -> writeFile (d ++ "/.dzenCmd") (dzenCmd (S 0)))
+writeDzenCmd :: IO ()
+writeDzenCmd = pathInCfg ".dzenCmd" >>= flip writeFile (dzenCmd (S 0))
 
 -- | Write xmobar command line string to file for debugging purposes.
-writeXmobarCmd :: IO()
+writeXmobarCmd :: IO ()
 writeXmobarCmd = do
-    d <- getXMonadDir
+    f <- pathInCfg ".xmobarCmd"
     cmd <- xmobarCmd (S 0)
-    writeFile (d ++ "/.xmobarCmd") cmd
+    writeFile f cmd
 
 -- | Directory used for haddock output.
-haddockDir :: MonadIO m => m String
-haddockDir = (++ "/doc") <$> getXMonadDir
+haddockDir :: IO FilePath
+haddockDir = pathInCfg "doc"
+
+-- | XMonad configuration directory.
+xmonadDir :: IO FilePath
+xmonadDir = cfgDir <$> getDirectories
+
+-- | Path into the XMonad configuration directory.
+pathInCfg :: FilePath -> IO FilePath
+pathInCfg f = (</> f) <$> xmonadDir
 
 -- | Icon root directory used for status bars.
 iconRoot :: String
@@ -536,7 +532,7 @@ keys' = [-- launch dmenu
           , ((modMask', xK_b), sendMessage ToggleStruts)
           -- run haddock together with recompile and restart
           -- FIXME no more docs for archlinux haskell packages
-          -- , ((modMask', xK_q), runHaddock >> rr)
+          -- , ((modMask', xK_q), io $ runHaddock >> rr)
           , ((modMask', xK_q), rr)
           -- lock screen
           , ((modMask' .|. shiftMask, xK_l), spawn "physlock -ms -p $(whoami)@$(hostname)")
@@ -566,7 +562,7 @@ ynPrompt :: XPConfig -- ^ config
          -> String   -- ^ title
          -> X ()     -- ^ action for positive input
          -> X ()
-ynPrompt c e t a = mkXPrompt (YNPrompt t) c (mkComplFunFromList []) ynAction
+ynPrompt c e t a = mkXPrompt (YNPrompt t) c (mkComplFunFromList c []) ynAction
     where ynAction [] = when e a
           ynAction s  = when (length s == 1 && (toLower . head) s == 'y') a
 
@@ -608,7 +604,7 @@ promptConfigFuzzy = promptConfig
 -- Additional keys are added as per XMonad.Doc.Extending
 -- (http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Doc-Extending.html#g:10)
 -- or rather XMonad.Util.EZConfig (additionalKeys)
-config' = ewmh def
+config' = ewmhFullscreen . ewmh $ def
     { terminal           = terminal'
     , borderWidth        = borderWidth'
     , modMask            = modMask'
@@ -620,7 +616,6 @@ config' = ewmh def
                          . keys def
     , layoutHook         = layout'
     , manageHook         = manageHook'
-    , handleEventHook    = eventHook'
     , startupHook        = startupHook'
     }
 
@@ -759,11 +754,11 @@ isLaptop = (`elem` ["8", "9", "10", "14"]) . head . lines
 
 The used haddock interfaces are defined in 'iHaddock'.
 -}
-runHaddock :: MonadIO m => m ()
+runHaddock :: IO ()
 runHaddock = do
     d <- haddockDir
-    c <- getXMonadDir
-    i <- io $ concatMap (\(u,i) -> " -i " ++ u ++ "," ++ i) . iHaddock <$> basePkg
+    c <- xmonadDir
+    i <- concatMap (\(u,i) -> " -i " ++ u ++ "," ++ i) . iHaddock <$> basePkg
     spawn ("haddock" ++ o ++ i ++ " -o " ++ d ++ " " ++ c ++ "/xmonad.hs " ++ c ++ "/lib/*.hs")
       where
         o = " -h --pretty-html --hyperlinked-source --no-print-missing-docs"
