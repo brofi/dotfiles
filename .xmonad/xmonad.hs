@@ -1,5 +1,7 @@
 -- For type constraints like 'LayoutClass l Window'
 {-# LANGUAGE FlexibleContexts #-}
+-- Provide all standard warnings plus a few like -fwarn-unsued-imports
+{-# OPTIONS_GHC -W #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -14,13 +16,12 @@ module Main where
 
 import Colors as C
 
-import Control.Monad (liftM,(>=>),when)
+import Control.Monad ((>=>),when)
 import Data.Char (toLower)
 import Data.List (intercalate)
-import Data.Monoid (All) -- for type only
 import qualified Data.Map as M
 import Graphics.X11.ExtraTypes.XF86 -- to use xF86XK_* in key bindings
-import System.Directory (getHomeDirectory,createDirectoryIfMissing)
+import System.Directory (createDirectoryIfMissing)
 import System.Exit (exitSuccess)
 import System.FilePath ((</>))
 import System.Process (readProcess)
@@ -38,7 +39,7 @@ import XMonad.Hooks.DynamicLog (PP,ppCurrent,ppVisible,ppHidden
 import XMonad.Hooks.EwmhDesktops (ewmh,ewmhFullscreen)
 import XMonad.Hooks.ManageDocks (AvoidStruts,avoidStruts,docks,ToggleStruts(ToggleStruts))
 import XMonad.Layout.Grid (Grid(Grid))
-import XMonad.Layout.LayoutCombinators ((|||),JumpToLayout(JumpToLayout))
+import XMonad.Layout.LayoutCombinators ((|||))
 import XMonad.Layout.LayoutModifier (ModifiedLayout) -- for type only
 import XMonad.Layout.Maximize (maximize,maximizeRestore)
 import XMonad.Layout.Minimize (minimize)
