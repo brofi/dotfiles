@@ -209,11 +209,11 @@ layoutExperimental = tabbed shrinkText tabTheme
 E.g. float a window or shift it to a specific workspace.-}
 manageHook' :: ManageHook
 manageHook' = composeAll
-                [ className =? "Skype"        --> doShift "5"
-                , className =? "Pidgin"       --> doShift "5"
-                , className =? "Steam"        --> doShift "8"
+                [ className =? "Skype"        --> doShift (workspaces' !! 6)
+                , className =? "Pidgin"       --> doShift (workspaces' !! 6)
+                , className =? "Steam"        --> doShift (workspaces' !! 7)
                 , className =? "Steam"        --> doFloat
-                , className =? "csgo_linux64" --> doShift "9" ]
+                , className =? "csgo_linux64" --> doShift (workspaces' !! 8) ]
 
 {- | Custom 'startupHook'.
 
