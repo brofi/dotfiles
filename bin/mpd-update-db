@@ -1,0 +1,32 @@
+#!/bin/bash
+
+__dir=$(dirname "${BASH_SOURCE[0]}")
+. "$__dir/../lib/error-utils.sh"
+
+if ! command -v mpc > /dev/null; then
+    err_exit "Need mpc to update music database" 1
+fi
+
+# $1: systemd unit
+function is_active {
+    systemctl --user --quiet is-active "$1"
+}
+
+# $1: systemd command
+function _mpd {
+    systemctl --user "$1" mpd.service > /dev/null 2>&1 || \
+        err_exit "Failed to $1 mpd.service" 1
+}
+
+mpd_started=false
+if ! is_active mpd.service && ! is_active mpd.socket; then
+    _mpd "start"; mpd_started=true
+fi
+
+printf "Updating music database..."
+mpc update --wait > /dev/null
+printf "done\n"
+
+if $mpd_started; then
+    _mpd "stop"
+fi
