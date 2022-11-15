@@ -416,7 +416,7 @@ if !executable('latex') || !executable('latexmk')
 endif
 
 "Ensure Vim starts with a server if feature 'clientserver' is available.
-if has('clientserver') && empty(v:servername)
+if has('clientserver') && empty(v:servername) && (has('win32') || !empty($DISPLAY))
     call remote_startserver('VIM')
 endif
 
