@@ -1,0 +1,31 @@
+# Interface
+wrap-around = yes
+bell-on-wrap = yes
+visible-bell = yes
+crossfade-time = 5
+seek-time = 5
+lyrics-timeout = 5
+
+# Display
+status-message-time = 2
+visible-bitrate = yes
+set-xterm-title = yes
+lyrics-autosave = no
+text-editor = vim
+text-editor-ask = yes
+
+# Colors
+color background = none
+color title = none/none
+color title-bold = yellow
+color line = yellow
+color line-flags = green,bold
+color list = none
+color list-bold = none,bold
+color browser-directory = blue
+color browser-playlist = cyan
+color progressbar = yellow/none
+color status-state = green/none
+color status-song  = none/none
+color status-time = none/none
+color alert = red
