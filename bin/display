@@ -170,6 +170,18 @@ function get_preferred_mode {
         }' | head -n 1
 }
 
+function ask_dpi {
+    local dpi
+    local dpi_choices=('custom' "${output_names[@]}")
+    printf '\nChoose DPI output:\n'
+    if read_choice "${dpi_choices[@]}"; then
+        read_uint 'Enter custom DPI (e.g. 96): ' dpi
+    else
+        dpi="${outputs[$(($? - 1))]}"
+    fi
+    xrandr_cmd="$xrandr_cmd --dpi $dpi"
+}
+
 # Rounds up given refresh rate to an integer.
 function round_rr {
     local left="${1%%.*}"
@@ -220,7 +232,7 @@ function get_outputs {
     # Return if enough valid outputs were specified on command line.
     if [ ${#outputs[@]} -ge "$min" ]; then
         # We only need the names if we have to query for primary or DPI
-        if [ -z "$primary" ] || [ "$dpi" = true ]; then
+        if [ -z "$primary" ] || [ "$ask_dpi" = true ]; then
             for o in "${outputs[@]}"; do
                 output_names=("${output_names[@]}" "$(get_output_name "$o")")
             done
@@ -304,12 +316,7 @@ function clone {
             cmd="$cmd --output $c --off"
         fi
     done
-
-    if [ "$__debug" = true ]; then
-        echo "$cmd"
-    else
-        eval "$cmd" && set_bg
-    fi
+    xrandr_cmd="$cmd"
 }
 
 # Extend two or more displays.
@@ -326,18 +333,6 @@ function extend {
     fi
 
     local cmd="xrandr"
-
-    local dpi_choices=('custom' "${output_names[@]}")
-    if [ "$dpi" = true ]; then
-        printf '\nChoose DPI output:\n'
-        if read_choice "${dpi_choices[@]}"; then
-            read_uint 'Enter custom DPI (e.g. 96): ' dpi
-        else
-            dpi="${outputs[$(($? - 1))]}"
-        fi
-        cmd="$cmd --dpi $dpi"
-    fi
-
     for i in "${!outputs[@]}"; do
         cmd="$cmd --output ${outputs[$i]}"
         cmd="$cmd $(get_mode_cmd "${outputs[$i]}")"
@@ -349,12 +344,7 @@ function extend {
             cmd="$cmd --output $c --off"
         fi
     done
-
-    if [ "$__debug" = true ]; then
-        echo "$cmd"
-    else
-        eval "$cmd" && set_bg
-    fi
+    xrandr_cmd="$cmd"
 }
 
 # Only show on one display.
@@ -370,25 +360,26 @@ function only {
             cmd="$cmd --output $c --off"
         fi
     done
-
-    if [ "$__debug" = true ]; then
-        echo "$cmd"
-    else
-        eval "$cmd" && set_bg
-    fi
+    xrandr_cmd="$cmd"
 }
 
 while [ $# -gt 0 ]; do
     case $1 in
-        --dpi) dpi=true; shift;;
+        --dpi) ask_dpi=true; shift;;
         clone|extend|only)
             cmd=$1; shift
             args=("$@")
             $cmd
+            [ "$ask_dpi" = true ] && ask_dpi
+            if [ "$__debug" = true ]; then
+                printf '%s\n' "$xrandr_cmd"
+            else
+                eval "$xrandr_cmd" && set_bg
+            fi
             unset cmd; break;;
         list|--list) print_connected && exit 0;;
         help|--help) usage && exit 0;;
         *) usage && exit 1;;
     esac
 done
-unset outputs
+unset outputs output_names xrandr_cmd
