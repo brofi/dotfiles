@@ -11,7 +11,7 @@ __debug_num_monitors=3
 
 # Get connected outputs from xrandr.
 _IFS=$IFS; IFS=$'\n'
-connected=($(xrandr | sed -n 's/\(.*\)[[:space:]]connected.*/\1/p'))
+connected=($(xrandr --current | sed -n 's/\(.*\)[[:space:]]connected.*/\1/p'))
 IFS=$_IFS
 
 [ $__debug = true ] && connected=("${connected[@]:0:$__debug_num_monitors}")
@@ -22,7 +22,7 @@ fi
 
 # Prints help page.
 function usage {
-    echo "usage: display [COMMAND]
+    echo "usage: display [OPTIONS] [COMMAND]
 
 COMMAND:
     clone [OUTPUT...]
@@ -44,7 +44,11 @@ COMMAND:
     Prints monitor names of connected outputs.
 
     help
-    Prints this help."
+    Prints this help.
+
+OPTIONS:
+    --dpi
+    Ask for DPI output or custom DPI value."
 }
 
 # Readjusts background set with 'feh'.
@@ -70,7 +74,7 @@ function valid_output {
 # Get EDID from xrandr of given output.
 # $1 output
 function get_edid {
-    xrandr --verbose \
+    xrandr --verbose --current \
     | sed -n '
         /^'"$1"'[[:blank:]]connected/,/^[[:alnum:]-]\+[[:blank:]]\(dis\)\?connected/ {
             s/^[[:blank:]]\+//
@@ -104,7 +108,7 @@ function get_output_name {
 # Gets resolutions for given outputs.
 function get_resolutions {
     for o in "$@"; do
-        xrandr -q | sed -n '
+        xrandr --current -q | sed -n '
             /^'"$o"'/,/.*\(dis\)\?connected/ {
                 /^'"$o"'/n
                 /.*\(dis\)\?connected/ !{
@@ -153,7 +157,7 @@ function get_mode_cmd {
 # Gets first preferred mode of given output and removes current (*) and
 # preferred (+) markers.
 function get_preferred_mode {
-    xrandr -q | sed -n '
+    xrandr --current -q | sed -n '
         /^'"$1"'/,/.*\(dis\)\?connected/ {
             /^'"$1"'/n
             /.*\(dis\)\?connected/ !{
@@ -215,8 +219,8 @@ function get_outputs {
 
     # Return if enough valid outputs were specified on command line.
     if [ ${#outputs[@]} -ge "$min" ]; then
-        # We only need the names if we have to query for primary
-        if [ -z "$primary" ]; then
+        # We only need the names if we have to query for primary or DPI
+        if [ -z "$primary" ] || [ "$dpi" = true ]; then
             for o in "${outputs[@]}"; do
                 output_names=("${output_names[@]}" "$(get_output_name "$o")")
             done
@@ -322,6 +326,18 @@ function extend {
     fi
 
     local cmd="xrandr"
+
+    local dpi_choices=('custom' "${output_names[@]}")
+    if [ "$dpi" = true ]; then
+        printf '\nChoose DPI output:\n'
+        if read_choice "${dpi_choices[@]}"; then
+            read_uint 'Enter custom DPI (e.g. 96): ' dpi
+        else
+            dpi="${outputs[$(($? - 1))]}"
+        fi
+        cmd="$cmd --dpi $dpi"
+    fi
+
     for i in "${!outputs[@]}"; do
         cmd="$cmd --output ${outputs[$i]}"
         cmd="$cmd $(get_mode_cmd "${outputs[$i]}")"
@@ -362,14 +378,17 @@ function only {
     fi
 }
 
-case $1 in
-    clone|extend|only)
-        cmd=$1; shift
-        args=("$@")
-        $cmd
-        unset cmd;;
-    list|--list) print_connected && exit 0;;
-    help|--help) usage && exit 0;;
-    *) usage && exit 1;;
-esac
+while [ $# -gt 0 ]; do
+    case $1 in
+        --dpi) dpi=true; shift;;
+        clone|extend|only)
+            cmd=$1; shift
+            args=("$@")
+            $cmd
+            unset cmd; break;;
+        list|--list) print_connected && exit 0;;
+        help|--help) usage && exit 0;;
+        *) usage && exit 1;;
+    esac
+done
 unset outputs
