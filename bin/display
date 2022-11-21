@@ -48,7 +48,10 @@ COMMAND:
 
 OPTIONS:
     --dpi
-    Ask for DPI output or custom DPI value."
+    Ask for DPI output or custom DPI value.
+
+    --dot
+    Write xrandr command to ~/.display"
 }
 
 # Readjusts background set with 'feh'.
@@ -180,6 +183,12 @@ function ask_dpi {
         dpi="${outputs[$(($? - 1))]}"
     fi
     xrandr_cmd="$xrandr_cmd --dpi $dpi"
+}
+
+function write_dot {
+    local path="$HOME/.display"
+    printf '#!/bin/sh\n%s\n' "$xrandr_cmd" > "$path"
+    chmod u+x "$path"
 }
 
 # Rounds up given refresh rate to an integer.
@@ -366,11 +375,13 @@ function only {
 while [ $# -gt 0 ]; do
     case $1 in
         --dpi) ask_dpi=true; shift;;
+        --dot) write_dot=true; shift;;
         clone|extend|only)
             cmd=$1; shift
             args=("$@")
             $cmd
             [ "$ask_dpi" = true ] && ask_dpi
+            [ "$write_dot" = true ] && write_dot
             if [ "$__debug" = true ]; then
                 printf '%s\n' "$xrandr_cmd"
             else
