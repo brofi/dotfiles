@@ -4,7 +4,7 @@
 . ~/.xinitrc_base
 
 xscreensaver &
-compton -b
+picom -b
 udiskie &
 dropbox &
 skypeforlinux &
