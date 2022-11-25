@@ -60,6 +60,13 @@ function set_bg {
     [ -x ~/.fehbg ] && . ~/.fehbg
 }
 
+# Restart picom wrapper if it was running.
+function restart_picomr {
+    if pgrep -f "picom.*--rounded-corners.*" >/dev/null; then
+        pkill picom && picomr
+    fi
+}
+
 # Print all connected outputs with their monitor's name.
 function print_connected {
     for c in "${connected[@]}"; do
@@ -385,7 +392,10 @@ while [ $# -gt 0 ]; do
             if [ "$__debug" = true ]; then
                 printf '%s\n' "$xrandr_cmd"
             else
-                eval "$xrandr_cmd" && set_bg
+                if eval "$xrandr_cmd"; then
+                    set_bg
+                    restart_picomr
+                fi
             fi
             unset cmd; break;;
         list|--list) print_connected && exit 0;;

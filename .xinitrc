@@ -4,7 +4,6 @@
 . ~/.xinitrc_base
 
 xscreensaver &
-picom -b
 udiskie &
 dropbox &
 skypeforlinux &
@@ -17,6 +16,7 @@ unclutter \
     -noevents \
     -root &
 
+picomr &
 
 # exec openbox-session
 exec xmonad

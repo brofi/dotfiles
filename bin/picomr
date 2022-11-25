@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+# A picom wrapper adding a rounded corner exclusion for windows occupying the
+# whole screen respecting multiple displays with varying resolutions.
+
+# Vertical offset, e.g. statusbar height
+voffset=24
+# Horizontal offset, e.g. window spacing
+hoffset=0
+
+# Get dimension of diplays
+mapfile -t dimen < <(xrandr --current | \
+    sed -n "s/^.*connected.*[[:space:]]\([0-9]\+x[0-9]\++[0-9]\++[0-9]\+\).*/\1/p")
+# Add exclusions to command
+picomcmd="picom -b "
+for d in "${dimen[@]}"; do
+    res="${d%%+*}"; res=("${res%x*}" "${res#*x}")
+    pos="${d#*+}"; pos=("${pos%+*}" "${pos#*+}")
+    # Window is on display horizontally
+    c="\"x >= ${pos[0]} && x2 <= $((pos[0] + res[0])) &&"
+    # Window occupies horizontal free space
+    c="$c widthb = $((res[0] - hoffset)) &&"
+    # Window is on display vertically
+    c="$c y >= ${pos[1]} && y2 <= $((pos[1] + res[1])) &&"
+    # Window occupies vertical free space
+    c="$c heightb = $((res[1] - voffset))\""
+    picomcmd="$picomcmd --rounded-corners-exclude $c"
+done; unset dimen d res pos w h c
+unset hoffset voffset
+
+# Run wrapper
+if ! eval "$picomcmd" >/dev/null 2>&1; then
+    unset picomcmd; exit 1
+fi
