@@ -147,7 +147,7 @@ case "$1" in
     --deep-search)
         find_dock_struts true;;
     --help)
-        usage;;
+        usage; exit 0;;
     *)
         find_dock_struts;;
 esac
