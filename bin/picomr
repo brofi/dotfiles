@@ -1,34 +1,238 @@
 #!/bin/bash
 #
 # A picom wrapper adding a rounded corner exclusion for windows occupying the
-# whole screen respecting multiple displays with varying resolutions.
+# whole screen respecting docks and multiple displays with varying resolutions.
 
-# Vertical offset, e.g. statusbar height
-voffset=24
-# Horizontal offset, e.g. window spacing
-hoffset=0
+usage() {
+    echo "usage: picomr [OPTIONS]
 
-# Get dimension of diplays
+OPTIONS:
+    --no-docks
+        Don't search for dock struts.
+
+    --single-dock-instances WM_NAME ...
+        Only one instance per given dock. Faster than --deep-search.
+
+    --symmetric-dock-instances WM_NAME ...
+        One instance of each dock on every display with the same height
+        (top/bottom docks) or the same width (left/right docks). Faster than
+        --deep-search.
+
+    --deep-search [true|false]
+        Find docks automatically in child windows of root window. False or no
+        argument given is the default of picomr. When true all children are
+        searched recursively.
+
+    --help
+        Prints this help."
+}
+
+_debug=false
+struts=()
+
+# Find all child windows of root with _NET_WM_WINDOW_TYPE =
+# _NET_WM_WINDOW_TYPE_DOCK and collect their _NET_WM_STRUT_PARTIAL.
+# $1: deep search (optional)
+find_dock_struts() {
+    command -v xprop >/dev/null || return 1
+    command -v xwininfo >/dev/null || return 1
+
+    local xwiarg='-children'
+    [ "${1:-false}" = true ] && xwiarg='-tree'
+
+    _log "Searching for dock struts with 'xwinfo -root $xwiarg'...\n"
+
+    local widp='0x[[:xdigit:]]\+'
+    mapfile -t child_ids < <(xwininfo -root $xwiarg | \
+        sed -e 's/^[ \t]\+\('"$widp"'\) .*/\1/' -e '/^'"$widp"'$/!d')
+
+    local id strut
+    for id in "${child_ids[@]}"; do
+        if xprop -id "$id" _NET_WM_WINDOW_TYPE | grep -wq _NET_WM_WINDOW_TYPE_DOCK; then
+            _log "\tFound dock: $id\n"
+            IFS=", " read -ra strut <<< "$(xprop -id "$id" -notype _NET_WM_STRUT_PARTIAL | \
+                sed -n 's/^_NET_WM_STRUT_PARTIAL = \(.*\)/\1/p')"
+            if [ ${#strut[@]} -ne 0 ]; then
+                _log "\t\tFound strut: ${strut[*]}\n"
+                struts=("${struts[@]}" "${strut[@]}")
+            fi
+        fi
+    done
+    _log "...done\n"
+}
+
+# Faster version of 'find_dock_struts' if each dock only has one instance.
+# $1: dock names
+get_dock_struts() {
+    command -v xprop >/dev/null || return 1
+
+    _log "Searching dock struts for ${*}...\n"
+    for d in "${@}"; do
+        if ! xprop -name "$d" >/dev/null 2>&1; then
+            _log "\tCouldn't find window for: '$d'\n"
+            continue
+        fi
+        if xprop -name "$d" _NET_WM_WINDOW_TYPE | grep -wq _NET_WM_WINDOW_TYPE_DOCK; then
+            _log "\tFound dock: $d\n"
+            IFS=", " read -ra strut <<< "$(xprop -name "$d" -notype _NET_WM_STRUT_PARTIAL | \
+                   sed -n 's/^_NET_WM_STRUT_PARTIAL = \(.*\)/\1/p')"
+            if [ ${#strut[@]} -ne 0 ]; then
+                _log "\t\tFound strut: ${strut[*]}\n"
+                struts=("${struts[@]}" "${strut[@]}")
+            fi
+
+        fi
+    done
+    _log "...done\n"
+}
+
+# Faster version of 'find_dock_struts'. Use if each dock has one instance on
+# every display with the same height (top/bottom docks) or same width
+# (left/right docks).
+# $1: dock names
+get_dock_struts_symmetric() {
+    command -v xprop >/dev/null || return 1
+
+    _log "Searching dock struts for ${*}...\n"
+    for d in "${@}"; do
+        if ! xprop -name "$d" >/dev/null 2>&1; then
+            _log "\tCouldn't find window for: '$d'\n"
+            continue
+        fi
+        if xprop -name "$d" _NET_WM_WINDOW_TYPE | grep -wq _NET_WM_WINDOW_TYPE_DOCK; then
+            _log "\tFound dock: $d\n"
+            IFS=", " read -ra strut <<< "$(xprop -name "$d" -notype _NET_WM_STRUT_PARTIAL | \
+                   sed -n 's/^_NET_WM_STRUT_PARTIAL = \(.*\)/\1/p' | \
+                   cut -d, -f1-4)"
+            if [ ${#strut[@]} -ne 0 ]; then
+                _log "\t\tFound strut (shortened): ${strut[*]}\n"
+                struts=("${struts[@]}" "${strut[@]}")
+            fi
+
+        fi
+    done
+    _log "...done\n"
+}
+
+_log() {
+    if [ $_debug = true ]; then
+        echo -ne "$1"
+    fi
+}
+
+_tostr() {
+    case $1 in
+        0) printf "left";;
+        1) printf "right";;
+        2) printf "top";;
+        3) printf "bottom";;
+        4) printf "left_start_y";;
+        5) printf "left_end_y";;
+        6) printf "right_start_y";;
+        7) printf "right_end_y";;
+        8) printf "top_start_x";;
+        9) printf "top_end_x";;
+        10) printf "bottom_start_x";;
+        11) printf "bottom_end_x";;
+    esac
+}
+
+case "$1" in
+    --no-docks);;
+    --single-dock-instances)
+        shift; get_dock_struts "$@";;
+    --symmetric-dock-instances)
+        symmetric=true
+        shift; get_dock_struts_symmetric "$@";;
+    --deep-search)
+        find_dock_struts true;;
+    --help)
+        usage;;
+    *)
+        find_dock_struts;;
+esac
+
+_log "\nGet dimension of displays..."
 mapfile -t dimen < <(xrandr --current | \
     sed -n "s/^.*connected.*[[:space:]]\([0-9]\+x[0-9]\++[0-9]\++[0-9]\+\).*/\1/p")
-# Add exclusions to command
+_log "done\n"
+_log "\nAdd exclusions to picom command...\n"
 picomcmd="picom -b "
 for d in "${dimen[@]}"; do
+    _log "\tFor display dimension $d:\n"
     res="${d%%+*}"; res=("${res%x*}" "${res#*x}")
     pos="${d#*+}"; pos=("${pos%+*}" "${pos#*+}")
-    # Window is on display horizontally
-    c="\"x >= ${pos[0]} && x2 <= $((pos[0] + res[0])) &&"
-    # Window occupies horizontal free space
-    c="$c widthb = $((res[0] - hoffset)) &&"
-    # Window is on display vertically
-    c="$c y >= ${pos[1]} && y2 <= $((pos[1] + res[1])) &&"
-    # Window occupies vertical free space
-    c="$c heightb = $((res[1] - voffset))\""
+    offs=(0 0 0 0)
+    i=0
+    if [ "$symmetric" = true ]; then
+        _log "\tGather offsets from struts...\n"
+        while [ "$i" -lt $((${#struts[@]}/4)) ]; do
+            _log "\t\tChecking strut$i: ${struts[*]:((i*4)):4}...\n"
+            j=0
+            while [ "$j" -lt 4 ]; do
+                s=${struts[((i * 4 + j))]}
+                _log "\t\t\t$(_tostr $j): $s"
+                if [ "$s" -eq 0 ]; then
+                    _log " -> no reserved area\n"
+                else
+                    if [ "$s" -gt "${offs[j]}" ]; then
+                        _log " -> setting $(_tostr $j) offset to $s\n"
+                        offs[j]="$s"
+                    else
+                        _log " -> $(_tostr $j) offset (${offs[j]}) already > $s\n"
+                    fi
+                fi
+                ((j++))
+            done
+            ((i++))
+            _log "\t\t...done\n"
+        done
+        _log "\t...done\n"
+    else
+        _log "\tGather offsets from struts...\n"
+        # For all _NET_WM_STRUT_PARTIAL
+        while [ "$i" -lt $((${#struts[@]}/12)) ]; do
+            _log "\t\tChecking strut$i: ${struts[*]:((i*12)):12}...\n"
+            j=0
+            while [ "$j" -lt 4 ]; do
+                s=${struts[((i * 12 + j))]} # left/right/top/bottom
+                ss=${struts[((i * 12 + j * 2 + 4))]} # start
+                se=${struts[((i * 12 + j * 2 + 5))]} # end
+                _log "\t\t\t$(_tostr $j): $s, $(_tostr $((j * 2 + 4))): $ss, $(_tostr $((j * 2 + 5))): $se\n"
+                if [ "$s" -eq 0 ]; then
+                    _log "\t\t\t\t-> no reserved area\n"
+                else
+                    # For left and right strut check if start_y and end_y are on
+                    # this display. For top and bottom strut check if start_x and
+                    # end_x are on this display.
+                    idx=$(((4-j-1)/2))
+                    if [ "$ss" -ge "${pos[$idx]}" ] && [ "$se" -le $((pos[idx]+res[idx])) ];then
+                        _log "\t\t\t\t-> within display dimension\n"
+                        if [ "$s" -gt "${offs[j]}" ]; then
+                            offs[j]="$s"
+                        fi
+                    else
+                        _log "\t\t\t\t-> outside of display dimension\n"
+                    fi
+                fi
+                ((j++))
+            done
+            ((i++))
+            _log "\t\t...done\n"
+        done
+        _log "\t...done\n"
+    fi
+    # Window is maxed out horizontally on display
+    c="\"x = $((pos[0]+offs[0])) && x2 = $((pos[0]+res[0]-offs[1])) &&"
+    # Window is maxed out vertically on display
+    c="$c y = $((pos[1]+offs[2])) && y2 = $((pos[1]+res[1]-offs[3]))\""
     picomcmd="$picomcmd --rounded-corners-exclude $c"
+    _log "\tAdding picom exclusion: $c\n"
 done; unset dimen d res pos w h c
+_log "...done\n"
 unset hoffset voffset
 
-# Run wrapper
+_log "Starting picom with:\n$picomcmd"
 if ! eval "$picomcmd" >/dev/null 2>&1; then
     unset picomcmd; exit 1
 fi

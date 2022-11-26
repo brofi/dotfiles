@@ -16,7 +16,5 @@ unclutter \
     -noevents \
     -root &
 
-picomr &
-
 # exec openbox-session
 exec xmonad
