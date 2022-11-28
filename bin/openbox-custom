@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# openbox-session wants to use PyXDG for autostarting desktop-entries in
+# /etc/xdg/autostart like picom.desktop.
+if ! python -c 'import xdg' 2>/dev/null; then
+    # Start normally
+    exec /usr/bin/openbox-session "$@"
+else
+    # Start with user's autostart only
+    exec /usr/bin/openbox --startup "sh ${XDG_CONFIG_HOME:-$HOME/.config}/openbox/autostart" "$@"
+fi

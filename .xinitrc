@@ -3,12 +3,9 @@
 # shellcheck source=.xinitrc_base
 . ~/.xinitrc_base
 
-xscreensaver &
+xscreensaver -no-splash &
 udiskie &
-dropbox &
-skypeforlinux &
-pidgin &
-steam-native &
+steam &
 
 unclutter \
     -grab \
@@ -16,5 +13,5 @@ unclutter \
     -noevents \
     -root &
 
-# exec openbox-session
+# exec openbox-custom
 exec xmonad

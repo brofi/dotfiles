@@ -1,6 +1,6 @@
 #!/bin/sh
 
-~/.fehbg &
 tint2 &
 volumeicon &
-sleep 1 && picomr --symmetric-dock-instances tint2 &
+until xprop -name tint2; do sleep 0.1; done \
+    && picomr --symmetric-dock-instances tint2 &
