@@ -47,6 +47,10 @@ COMMAND:
     Prints this help.
 
 OPTIONS:
+    --align [top|bottom|center]
+    Vertically align outputs to the top, bottom or center of the resulting
+    screen. Default is bottom.
+
     --dpi
     Ask for DPI output or custom DPI value.
 
@@ -178,6 +182,12 @@ function get_preferred_mode {
                 }
             }
         }' | head -n 1
+}
+
+function get_preferred_res {
+    local mode_array
+    IFS=" " read -r -a mode_array <<< "$(get_preferred_mode "$1")"
+    printf '%s' "${mode_array[0]}"
 }
 
 function ask_dpi {
@@ -314,6 +324,49 @@ function get_outputs {
     done
 }
 
+# Get x and y position of outputs. Returns false if outputs don't need
+# alignment.
+function get_positions {
+    # Xrandr already puts outputs at the top of the screen
+    [ "$align" = 'top' ] && return 1
+
+    pos_x=() pos_y=()
+
+    # Get maximum height and resolution of outputs
+    local max_h=0 res=()
+    for o in "${outputs[@]}"; do
+        local r
+        r=$(get_preferred_res "$o")
+        res=("${res[@]}" "$r")
+
+        local h=${r#*x}
+        if [ "$h" -gt $max_h ]; then
+            max_h=$h
+        fi
+    done
+
+    # Calculate output positions for bottom or center alignment
+    local sum_pos_y=0
+    for i in "${!res[@]}"; do
+        local h=${res[$i]#*x}
+        y=$((max_h-h))
+        if [ "$align" = 'center' ]; then
+            y=$((y/2))
+        fi
+        pos_y[$i]=$y
+        ((sum_pos_y+=y))
+        if [ "$i" -eq 0 ]; then
+            pos_x[0]=0
+        else
+            xl=${pos_x[$((i-1))]}
+            wl=${res[$((i-1))]%x*}
+            pos_x[$i]=$((xl+wl))
+        fi
+    done
+    # No need for alignment if all outputs are the same height
+    [ $sum_pos_y -ne 0 ]
+}
+
 # Clone two or more outputs.
 function clone {
     if ! get_outputs 2 ${#connected[@]} ""; then
@@ -336,7 +389,6 @@ function clone {
 }
 
 # Extend two or more displays.
-# TODO --pos xxy with y=(max.height-height)/2
 function extend {
     if ! get_outputs 2 ${#connected[@]} "Choose outputs from left to right:" true; then
         err_exit "Unexpected error." 1
@@ -348,12 +400,19 @@ function extend {
         primary=${outputs[$?]}
     fi
 
+    local use_pos
+    get_positions && use_pos=true
+
     local cmd="xrandr"
     for i in "${!outputs[@]}"; do
         cmd="$cmd --output ${outputs[$i]}"
         cmd="$cmd $(get_mode_cmd "${outputs[$i]}")"
         [ "$primary" = "${outputs[$i]}" ] && cmd="$cmd --primary"
-        [ "$i" -gt 0 ] && cmd="$cmd --right-of ${outputs[$((i - 1))]}"
+        if [ "$use_pos" = true ]; then
+            cmd="$cmd --pos ${pos_x[$i]}x${pos_y[$i]}"
+        else
+            [ "$i" -gt 0 ] && cmd="$cmd --right-of ${outputs[$((i - 1))]}"
+        fi
     done
     for c in "${connected[@]}"; do
         if ! array_elem "$c" "${outputs[@]}"; then
@@ -379,10 +438,17 @@ function only {
     xrandr_cmd="$cmd"
 }
 
+align='bottom'
 while [ $# -gt 0 ]; do
     case $1 in
         --dpi) ask_dpi=true; shift;;
         --dot) write_dot=true; shift;;
+        --align)
+            shift
+            case $1 in
+                top|bottom|center) align=$1;;
+                *) err_exit "Unknown alignment '$1'." 1;;
+            esac; shift;;
         clone|extend|only)
             cmd=$1; shift
             args=("$@")
