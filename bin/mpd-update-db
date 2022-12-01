@@ -1,11 +1,23 @@
 #!/bin/bash
+#
+# --verbose: show log file
 
+# shellcheck source=/dev/null
 __dir=$(dirname "${BASH_SOURCE[0]}")
 . "$__dir/../lib/error-utils.sh"
 
 if ! command -v mpc > /dev/null; then
     err_exit "Need mpc to update music database" 1
 fi
+
+mpd_conf="${XDG_CONFIG_HOME:-$HOME/.config}/mpd/mpd.conf"
+
+# $1: conf label
+function mpd_file {
+    local f
+    f="$(sed -n -e 's/^'"$1"'[ \t]\+"\(.*\)".*/\1/p' "$mpd_conf")"
+    printf '%s' "${f/#\~/$HOME}"
+}
 
 # $1: systemd unit
 function is_active {
@@ -23,9 +35,17 @@ if ! is_active mpd.service && ! is_active mpd.socket; then
     _mpd "start"; mpd_started=true
 fi
 
-printf "Updating music database..."
+touch "$(mpd_file 'db_file')"
+printf "Updating music database...\n"
+if [ "$1" = '--verbose' ]; then
+    _log=$(mpd_file 'log_file')
+    touch "$_log"
+    tail -n0 -f --pid=$$ "$_log" &
+fi
+
 mpc update --wait > /dev/null
-printf "done\n"
+
+printf "...done\n"
 
 if $mpd_started; then
     _mpd "stop"
