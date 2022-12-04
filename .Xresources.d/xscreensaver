@@ -1,53 +1,47 @@
 ! XScreenSaver resources
-!
-! Generate settings to ~/.xsettings with xscreensaver-demo -prefs.
 
-xscreensaver.timeout: 0:15:00
-xscreensaver.cycle: 0:10:00
-xscreensaver.lock: false
-xscreensaver.lockTimeout: 0:00:10
-xscreensaver.newLoginCommand:
-xscreensaver.fade: false
-xscreensaver.fadeSeconds: 0
-! Options e.g: one, blank, off
-xscreensaver.mode: one
-! When mode: one
-xscreensaver.selected: 205
+! General
+XScreenSaver*mode: one
+XScreenSaver*selected: 206
+XScreenSaver*timeout: 0:15:00
+XScreenSaver*lockTimeout: 0:00:05
+XScreenSaver*passwdTimeout: 0:00:10
+XScreenSaver*lock: false
+XScreenSaver*fade: true
+XScreenSaver*unfade: false
+XScreenSaver*fadeSeconds: 0:00:02
+XScreenSaver*splash: false
+XScreenSaver*splashDuration: 0:00:00
+XScreenSaver*dateFormat: %x %X
+XScreenSaver*newLoginCommand:
 
-! Stop complaining about missing fallback fonts
-#define XSC_DIALOG_FONT *-medium-r-*-120-*-m-*
-xscreensaver.Dialog.headingFont: XSC_DIALOG_FONT
-xscreensaver.Dialog.bodyFont: XSC_DIALOG_FONT
-xscreensaver.Dialog.labelFont: XSC_DIALOG_FONT
-xscreensaver.Dialog.unameFont: XSC_DIALOG_FONT
-xscreensaver.Dialog.buttonFont: XSC_DIALOG_FONT
-xscreensaver.Dialog.dateFont: XSC_DIALOG_FONT
-xscreensaver.passwd.passwdFont: XSC_DIALOG_FONT
+! Font
+XScreenSaver*Dialog.headingFont: sans-serif 8
+XScreenSaver*Dialog.bodyFont: sans-serif 8
+XScreenSaver*Dialog.errorFont: sans-serif bold 10
+XScreenSaver*Dialog.labelFont: sans-serif 12
+XScreenSaver*Dialog.unameFont: sans-serif bold 14
+XScreenSaver*Dialog.buttonFont: sans-serif bold 10
+XScreenSaver*Dialog.dateFont: sans-serif 8
+XScreenSaver*errorFont: sans-serif bold 12
 
-! Splash options
-xscreensaver.splash: false
-xscreensaver.splashDuration: 0:00:00
-xscreensaver.splash.heading.label:
-xscreensaver.splash.body.label:
-xscreensaver.splash.body2.label:
-
-! Ugly dialog options
-xscreensaver.dateFormat:
-xscreensaver.passwd.body.label:
-xscreensaver.passwd.heading.label:
-xscreensaver.passwd.unlock.label: Login
-xscreensaver.passwd.thermometer.width: 5
-xscreensaver.passwd.thermometer.foreground: FOREGROUND
-xscreensaver.passwd.thermometer.background: BACKGROUND_SOFT
-xscreensaver.Dialog.foreground: FOREGROUND
-xscreensaver.Dialog.background: BACKGROUND
-xscreensaver.Dialog.text.foreground: FOREGROUND
-xscreensaver.Dialog.text.background: BACKGROUND_SOFT
-xscreensaver.Dialog.Button.background: BACKGROUND_SOFT
-xscreensaver.Dialog.Button.foreground: FOREGROUND
-xscreensaver.Dialog.shadowThickness: 1
-xscreensaver.Dialog.topShadowColor: BACKGROUND
-xscreensaver.Dialog.bottomShadowColor: BACKGROUND
-xscreensaver.Dialog.borderWidth: 0
+! Dialog Theme
+XScreenSaver*dialogTheme: default
+XScreenSaver*default.Dialog.foreground: FOREGROUND
+XScreenSaver*default.Dialog.background: BACKGROUND
+XScreenSaver*default.Dialog.button.background: BACKGROUND_NORMAL
+XScreenSaver*default.Dialog.button.foreground: FOREGROUND
+XScreenSaver*default.Dialog.logo.background: BACKGROUND_NORMAL
+XScreenSaver*default.Dialog.text.foreground: FOREGROUND
+XScreenSaver*default.Dialog.text.background: BACKGROUND_NORMAL
+XScreenSaver*default.Dialog.topShadowColor: BACKGROUND_SOFT
+XScreenSaver*default.Dialog.bottomShadowColor: BACKGROUND_SOFT
+XScreenSaver*default.Dialog.shadowWidth: 1
+XScreenSaver*default.Dialog.thermometer.foreground: FOREGROUND
+XScreenSaver*default.Dialog.thermometer.background: BACKGROUND_NORMAL
+XScreenSaver*default.Dialog.thermometer.width: 5
+XScreenSaver*default.Dialog.borderColor: BACKGROUND_SOFT
+XScreenSaver*default.Dialog.borderWidth: 0
+XScreenSaver*default.Dialog.internalPadding: 10
 
 ! vim: set ft=xdefaults:
