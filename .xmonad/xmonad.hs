@@ -82,7 +82,7 @@ modMask' = mod4Mask
 -- | Xmonad border colors.
 normalBorderColor', focusedBorderColor' :: C.Color
 normalBorderColor'  = bg
-focusedBorderColor' = yellow
+focusedBorderColor' = green
 
 -- | When @True@ spacing is not applied if there fewer than two windows.
 useSmartSpacing' :: Bool
@@ -261,7 +261,7 @@ iconRoot = ".xmobar/icons"
 -- | dmenu with command line options.
 dmenu :: String
 dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg0
-        ++ "' -sf '" ++ yellow ++ "' -sb '" ++ bg
+        ++ "' -sf '" ++ green ++ "' -sb '" ++ bg
         ++ "' -p '>' -fn '" ++ xftFont ++ "'"
 
 -- | trayer command line string.
@@ -542,7 +542,7 @@ promptConfig = def
     , bgColor = bg
     , fgColor = fg0
     , bgHLight = bg
-    , fgHLight = yellow
+    , fgHLight = green
     , borderColor = bg
     , promptBorderWidth = 0
     , position = Bottom
