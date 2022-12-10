@@ -10,9 +10,11 @@
 # would've to multiply the decimal red, green and blue value with 1000 and
 # divide by 255 (see 'infocmp linux | grep initc'). For fbterm the range is
 # 0-255. Since 'tput initc' is terminal-dependent we just use the escape codes.
+#
+# OPTIONS
+#   --print    Print out (don't interpret) initc escape sequence
 
-# Only supports fbterm and linux (see above).
-if [ "$TERM" != "fbterm" ] && [ "$TERM" != "linux" ]; then
+if [ "$1" != '--print' ] && [ "$TERM" != "fbterm" ] && [ "$TERM" != "linux" ]; then
     exit 0
 fi
 
@@ -131,14 +133,24 @@ for i in "${colors[@]}"; do
     r="0x${c: :2}"
     g="0x${c:2:2}"
     b="0x${c: -2}"
-    if [ "$TERM" = "fbterm" ]; then
-        printf "\033[3;%d;%d;%d;%d}" "$n" "$r" "$g" "$b"
-    elif [ "$TERM" = "linux" ]; then
-        printf "\033]P%x%x%x%x" "$n" "$r" "$g" "$b"
-    fi
+    initc_fbterm+=$(printf '\\033[3;%d;%d;%d;%d}' "$n" "$r" "$g" "$b")
+    initc_linux+=$(printf '\\033]P%x%x%x%x' "$n" "$r" "$g" "$b")
 done
 
+if [ "$1" = '--print' ]; then
+    printf 'fbterm:\n%s\n' "$initc_fbterm"
+    printf '\n'
+    printf 'linux:\n%s\n' "$initc_linux"
+elif [ "$TERM" = "fbterm" ]; then
+    printf '%b' "$initc_fbterm"
+elif [ "$TERM" = "linux" ]; then
+    # Add linux clear, otherwise only characters have a background
+    initc_linux+='\033[H\033[J' # see: infocmp -1 linux | grep -o clear.*
+    printf '%b' "$initc_linux"
+fi
+
 unset colors i c n r g b
+unset initc_fbterm initc_linux
 unset -f get_colors_xrdb get_colors_manually
 
 # vim: set fdm=marker:
