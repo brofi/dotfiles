@@ -13,8 +13,11 @@ function get_device_name {
     xinput --list --name-only "$1"
 }
 
-function is_valid_id {
-    xinput --list --id-only "$1" >/dev/null 2>&1
+# True if device is a pointer, but not the Virtual core XTEST pointer.
+# $1: device id
+function is_valid_pointer {
+    xinput --list --short "$1" 2>/dev/null |
+        sed '/XTEST/d' | grep -q 'slave \+pointer'
 }
 
 # $1 array of pointer IDs
@@ -62,14 +65,15 @@ if [ -f ~/.mouse ]; then
     # Get pointer id(s) from config
     mapfile -t curr_pointer_ids < <(grep -o 'xinput --set-prop [0-9]\+' ~/.mouse |
         cut -d' ' -f3 | uniq | sort -n)
-    array_filter is_valid_id curr_pointer_ids
+    array_filter is_valid_pointer curr_pointer_ids
 else
     # Create mouse config for use with .xinitrc
     echo "#!/bin/sh" > ~/.mouse && chmod u+x ~/.mouse
 fi
 
-# Get IDs of all slave pointers
-mapfile -t slave_pointer_ids < <(xinput --list | grep 'slave \+pointer' |
+# Get IDs of all slave pointers (remove XTEST devices first)
+mapfile -t slave_pointer_ids < <(xinput --list |
+    sed -n -e '/XTEST/d' -e '/slave \+pointer/p' |
     cut -f2 | cut -d= -f2 | sort -n)
 
 if [ ${#curr_pointer_ids[@]} -gt 1 ]; then
