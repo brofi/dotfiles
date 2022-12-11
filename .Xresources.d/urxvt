@@ -17,18 +17,25 @@ URxvt.keysym.C-Right: \033[1;5C
 URxvt*perl-ext-common: default,-confirm-paste,matcher,tabbedex,resize-font
 
 ! tabbedex
-URxvt.tabbed.tabbar-fg: -2
-URxvt.tabbed.tabbar-bg: -1
-URxvt.tabbed.tab-fg: 10
-URxvt.tabbed.tab-bg: -1
-URxvt.tabbed.autohide: yes
-URxvt.tabbed.new-button:  no
-URxvt.tabbed.title: no
+URxvt.tabbedex.autohide: yes
+URxvt.tabbedex.new-button:  no
+URxvt.tabbedex.title: no
+! tabbedex color
+URxvt.tabbedex.tabbar-fg: -2
+URxvt.tabbedex.tabbar-bg: -1
+URxvt.tabbedex.tab-fg: -1
+URxvt.tabbedex.tab-bg: -2
+URxvt.tabbedex.bell-fg: 9
+URxvt.tabbedex.bell-bg: -1
+URxvt.tabbedex.bell-tab-fg: -1
+URxvt.tabbedex.bell-tab-bg: 9
+URxvt.tabbedex.title-fg: -2
+URxvt.tabbedex.title-bg: -1
 
 ! Solve tabbedex conflicts with move-by-word-keys
 !
 ! Explicitly disable default mappings beforehand
-URxvt.tabbed.no-tabbedex-keys: true
+URxvt.tabbedex.no-tabbedex-keys: true
 ! Default
 URxvt.keysym.S-Down: perl:tabbedex:new_tab
 URxvt.keysym.S-Right: perl:tabbedex:next_tab
@@ -46,7 +53,7 @@ URxvt.resize-font.show: C-question
 
 ! matcher
 URxvt.url-launcher: /usr/bin/xdg-open
-URxvt.matcher.button: 1
+URxvt.matcher.button: 3
 URxvt.matcher.rend.0: Bold fg8
 
 ! vim: set ft=xdefaults:
