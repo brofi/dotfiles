@@ -1,6 +1,6 @@
 #!/bin/bash
-# shellcheck disable=SC1090
 
+# shellcheck source-path=SCRIPTDIR
 __dir=$(dirname "${BASH_SOURCE[0]}")
 
 . "$__dir/../lib/array-utils.sh"
@@ -59,20 +59,18 @@ function read_curr_pointer_id {
 }
 
 if [ -f ~/.mouse ]; then
-    _IFS=$IFS; IFS=$'\n'
     # Get pointer id(s) from config
-    curr_pointer_ids=($(grep -o 'xinput --set-prop [0-9]\+' ~/.mouse | cut -d' ' -f3 | uniq | sort -n))
+    mapfile -t curr_pointer_ids < <(grep -o 'xinput --set-prop [0-9]\+' ~/.mouse |
+        cut -d' ' -f3 | uniq | sort -n)
     array_filter is_valid_id curr_pointer_ids
-    IFS=$_IFS
 else
     # Create mouse config for use with .xinitrc
     echo "#!/bin/sh" > ~/.mouse && chmod u+x ~/.mouse
 fi
 
-_IFS=$IFS; IFS=$'\n'
 # Get IDs of all slave pointers
-slave_pointer_ids=($(xinput --list | grep 'slave \+pointer' | cut -f2 | cut -d= -f2 | sort -n))
-IFS=$_IFS
+mapfile -t slave_pointer_ids < <(xinput --list | grep 'slave \+pointer' |
+    cut -f2 | cut -d= -f2 | sort -n)
 
 if [ ${#curr_pointer_ids[@]} -gt 1 ]; then
     print_pointer_ids "${curr_pointer_ids[@]}"
@@ -85,9 +83,8 @@ else
 fi
 
 # Get all acceleration and scrolling properties for selected pointer
-_IFS=$IFS; IFS=$'\n'
-mouse_props=($(xinput --list-props "$pointer_id" | grep 'Accel\|Scroll' | sed 's/^[[:space:]]*//'))
-IFS=$_IFS
+mapfile -t mouse_props < <(xinput --list-props "$pointer_id" |
+    grep 'Accel\|Scroll' | sed 's/^[[:space:]]*//')
 
 # Split properties in name, id and value
 for i in "${!mouse_props[@]}"; do
@@ -185,13 +182,17 @@ if [ "$is_shortcut" = false ]; then
 fi
 
 for i in "${!property_names[@]}"; do
+    # shellcheck disable=SC2086 # Word splitting on values intentional, globbing
+    # doesn't occur because values can only be %d|%f[,%d|%f]...
     if xinput --set-prop "$pointer_id" "${property_names[$i]}" ${new_values[$i]} > /dev/null 2>&1; then
         # Replace value if property is already configured, else merge the new
-        # property with the already sorted mouse config
-        grep -q "xinput --set-prop $pointer_id '${property_names[$i]}'" ~/.mouse \
-            && sed -i "s/\(xinput --set-prop $pointer_id '${property_names[$i]}'\).*/\1 ${new_values[$i]}/" ~/.mouse \
-            || printf "xinput --set-prop %s '%s' %s\n" "$pointer_id" "${property_names[$i]}" "${new_values[$i]}" \
-                | sort -o ~/.mouse -m - ~/.mouse
+        # property with the already sorted mouse config.
+        # shellcheck disable=SC2015 # Replacing the value doesn't fail if the
+        # property for the pointer exists
+        grep -q "xinput --set-prop $pointer_id '${property_names[$i]}'" ~/.mouse &&
+            sed -i "s/\(xinput --set-prop $pointer_id '${property_names[$i]}'\).*/\1 ${new_values[$i]}/" ~/.mouse ||
+            printf "xinput --set-prop %s '%s' %s\n" "$pointer_id" "${property_names[$i]}" "${new_values[$i]}" |
+                sort -o ~/.mouse -m - ~/.mouse
         echo "'${property_names[$i]}' set to ${new_values[$i]}"
     else
         err_print "Failed to set value ${new_values[$i]} to property '${property_names[$i]}'"
