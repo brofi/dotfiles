@@ -14,7 +14,7 @@ URxvt.keysym.C-Right: \033[1;5C
 
 !! Perl extension scripts configuration
 
-URxvt*perl-ext: tabbedex,resize-font,matcher
+URxvt*perl-ext-common: default,-confirm-paste,matcher,tabbedex,resize-font
 
 ! tabbedex
 URxvt.tabbed.tabbar-fg: -2
@@ -26,7 +26,8 @@ URxvt.tabbed.new-button:  no
 URxvt.tabbed.title: no
 
 ! Solve tabbedex conflicts with move-by-word-keys
-! We must explicitly disable default mappings beforehand (use git version for this)
+!
+! Explicitly disable default mappings beforehand
 URxvt.tabbed.no-tabbedex-keys: true
 ! Default
 URxvt.keysym.S-Down: perl:tabbedex:new_tab
