@@ -88,13 +88,12 @@ function valid_output {
 # Get EDID from xrandr of given output.
 # $1 output
 function get_edid {
-    xrandr --verbose --current \
-    | sed -n '
+    xrandr --verbose --current |
+    sed -n '
         /^'"$1"'[[:blank:]]connected/,/^[[:alnum:]-]\+[[:blank:]]\(dis\)\?connected/ {
             s/^[[:blank:]]\+//
             /^[[:xdigit:]]\+$/ p
-        }' \
-    | tr -d '\n'
+        }' | tr -d '\n'
 }
 
 # Gets the monitor name decoded from the monitor's EDID.
@@ -107,10 +106,10 @@ function get_monitor_name {
     # can be used as Monitor Descriptor blocks. When used as a Monitor
     # Descriptor Block they start with '000000', then e.g. 'fc' for monitor
     # name, then '00'. The remaining 13 bytes represent the actual value.
-    printf '%s' "${edid:144:-4}" \
-        | sed 's/.*000000fc00\([[:xdigit:]]\{26\}\).*/\1/' \
-        | xxd -r -p \
-        | sed 's/[[:space:]]*$//'
+    printf '%s' "${edid:144:-4}" |
+        sed 's/.*000000fc00\([[:xdigit:]]\{26\}\).*/\1/' |
+        xxd -r -p |
+        sed 's/[[:space:]]*$//'
 }
 
 # Monitor name in format: monitor_name (output).
@@ -134,11 +133,11 @@ function get_resolutions {
 
 # Gets common resolution for given outputs.
 function get_common_resolution {
-    get_resolutions "$@" \
-         | sort -nr \
-         | uniq -cd \
-         | sort -nu \
-         | sed -n 's/^.*'"$#"'[[:space:]]\(.*\)/\1/p'
+    get_resolutions "$@" |
+        sort -nr |
+        uniq -cd |
+        sort -nu |
+        sed -n 's/^.*'"$#"'[[:space:]]\(.*\)/\1/p'
 }
 
 # Returns xrandr --mode and --rate if a higher refresh rate than the preferred
@@ -232,16 +231,16 @@ function get_outputs {
     local needsOrder=${4:-false}
 
     # Enforce sensible min/max interval.
-    if ! number_is_uint "$min" || [ "$min" -gt ${#connected[@]} ] \
-        || ! number_is_uint "$max" || [ "$max" -gt ${#connected[@]} ] \
-        || [ "$min" -gt "$max" ]; then
+    if ! number_is_uint "$min" || [ "$min" -gt ${#connected[@]} ] ||
+        ! number_is_uint "$max" || [ "$max" -gt ${#connected[@]} ] ||
+        [ "$min" -gt "$max" ]; then
             return 1
     fi
 
     # If we need exactly the number of outputs connected to the system and don't
     # need them in a specific order get all connected outputs.
-    if [ "$min" -eq "$max" ] && [ "$max" -eq ${#connected[@]} ] \
-        && [ "$needsOrder" = false ]; then
+    if [ "$min" -eq "$max" ] && [ "$max" -eq ${#connected[@]} ] &&
+        [ "$needsOrder" = false ]; then
             outputs=("${connected[@]}")
             return
     fi
@@ -314,9 +313,9 @@ function get_outputs {
             # If we need exactly the number of outputs connected to the system
             # and the user chose the order of all outputs except the last one,
             # add it.
-            if [ "$min" -eq "$max" ] && [ "$max" -eq ${#connected[@]} ] \
-                && [ "${#outputs[@]}" -eq "$((max - 1))" ] \
-                && [ "$needsOrder" = true ]; then
+            if [ "$min" -eq "$max" ] && [ "$max" -eq ${#connected[@]} ] &&
+                [ "${#outputs[@]}" -eq "$((max - 1))" ] &&
+                [ "$needsOrder" = true ]; then
                     outputs=("${outputs[@]}" "${choices_raw[0]}")
                     output_names=("${output_names[@]}" "${choices[0]}")
             fi

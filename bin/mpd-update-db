@@ -26,7 +26,7 @@ function is_active {
 
 # $1: systemd command
 function _mpd {
-    systemctl --user "$1" mpd.service > /dev/null 2>&1 || \
+    systemctl --user "$1" mpd.service > /dev/null 2>&1 ||
         err_exit "Failed to $1 mpd.service" 1
 }
 
