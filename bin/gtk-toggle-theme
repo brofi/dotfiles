@@ -1,0 +1,18 @@
+#!/bin/bash
+
+command -v gtk-query-settings >/dev/null || exit 1
+command -v papirus-folders >/dev/null || exit 1
+
+read -r _ is_dark < <(gtk-query-settings prefer-dark)
+
+settings=(1 Papirus-Dark white)
+[ "$is_dark" = TRUE ] && settings=(0 Papirus-Light black)
+
+printf 'Changing theme...'
+conf=${XDG_CONFIG_HOME:-$HOME/.config}
+for s in $conf/{gtk-3.0,gtk-4.0}/settings.ini; do
+    sed -i --follow-symlinks "/gtk-application-prefer-dark-theme/s/=.*/=${settings[0]}/" "$s"
+    sed -i --follow-symlinks "/gtk-icon-theme-name/s/=.*/=${settings[1]}/" "$s"
+done
+papirus-folders -o -t "${settings[1]}" -C "${settings[2]}" >/dev/null
+printf 'done\n'
