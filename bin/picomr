@@ -35,7 +35,7 @@ find_dock_struts() {
     [ "${1:-true}" = false ] && xwiarg='-children'
     local names=("${@:2}")
 
-    _log "Searching for ${names[*]:-dock} struts in 'xwinfo -root $xwiarg'...\n"
+    _log "Searching for ${names[*]:-dock} struts in 'xwininfo -root $xwiarg'...\n"
 
     namep='.*'
     if [ "${#names[@]}" -ge 1 ]; then
@@ -48,7 +48,9 @@ find_dock_struts() {
 
     local id strut
     for id in "${child_ids[@]}"; do
-        if xprop -id "$id" _NET_WM_WINDOW_TYPE | grep -wq _NET_WM_WINDOW_TYPE_DOCK; then
+        if xprop -id "$id" _NET_WM_WINDOW_TYPE 2>/dev/null |
+            grep -wq _NET_WM_WINDOW_TYPE_DOCK; then
+
             _log "\tFound dock: $id\n"
             IFS=", " read -ra strut <<< "$(xprop -id "$id" -notype _NET_WM_STRUT_PARTIAL |
                 sed -n 's/^_NET_WM_STRUT_PARTIAL = \(.*\)/\1/p')"
