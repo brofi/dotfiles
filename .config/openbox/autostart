@@ -2,5 +2,5 @@
 
 tint2 &
 volumeicon &
-until xprop -name tint2; do sleep 0.1; done \
-    && picomr --symmetric-dock-instances tint2 &
+until xprop -name tint2; do sleep 0.1; done &&
+    picomr tint2 &

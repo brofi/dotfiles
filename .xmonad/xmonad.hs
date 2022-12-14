@@ -225,7 +225,7 @@ startupHook' = io (haddockDir >>= createDirectoryIfMissing False)
                <+> io writeDzenCmd
                <+> io writeXmobarCmd
                <+> spawn "pkill trayer" >> spawn ("sleep 1 && " ++ trayerCmd)
-               <+> spawn "! pidof picom && sleep 1 && picomr --symmetric-dock-instances xmobar"
+               <+> spawn "! pidof picom && sleep 1 && picomr --no-deep-search xmobar"
 
 -- | Write trayer command line string to file for debugging purposes.
 writeTrayerCmd :: IO ()
