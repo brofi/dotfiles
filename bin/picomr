@@ -1,22 +1,18 @@
 #!/bin/bash
 #
 # A picom wrapper adding a rounded corner exclusion for windows occupying the
-# whole screen respecting docks and multiple displays with varying resolutions.
+# whole screen respecting docks and multiple displays with varying resolutions
+# and alignment.
 
 usage() {
-    echo "usage: picomr [OPTIONS]
+    echo "usage: picomr [OPTIONS] [WM_NAME of dock...]
 
 OPTIONS:
     --no-docks
         Don't search for dock struts.
 
-    --single-dock-instances WM_NAME ...
-        Only one instance per given dock. Faster than --deep-search.
-
-    --deep-search [true|false]
-        Find docks automatically in child windows of root window. False or no
-        argument given is the default of picomr. When true all children are
-        searched recursively.
+    --no-deep-search
+        Don't search children of root recursively.
 
     --help
         Prints this help."
@@ -26,20 +22,29 @@ _debug=false
 struts=()
 
 # Find all child windows of root with _NET_WM_WINDOW_TYPE =
-# _NET_WM_WINDOW_TYPE_DOCK and collect their _NET_WM_STRUT_PARTIAL.
-# $1: deep search (optional)
+# _NET_WM_WINDOW_TYPE_DOCK and collect their _NET_WM_STRUT_PARTIAL. Supplying
+# the names of each dock vastly improves performance, since it results in way
+# less xprop calls.
+# $1: deep search
+# ${@:2}: dock names (optional)
 find_dock_struts() {
     command -v xprop >/dev/null || return 1
     command -v xwininfo >/dev/null || return 1
 
-    local xwiarg='-children'
-    [ "${1:-false}" = true ] && xwiarg='-tree'
+    local xwiarg='-tree'
+    [ "${1:-true}" = false ] && xwiarg='-children'
+    local names=("${@:2}")
 
-    _log "Searching for dock struts with 'xwinfo -root $xwiarg'...\n"
+    _log "Searching for ${names[*]:-dock} struts in 'xwinfo -root $xwiarg'...\n"
 
-    local widp='0x[[:xdigit:]]\+'
+    namep='.*'
+    if [ "${#names[@]}" -ge 1 ]; then
+        namep='"\('"${names[0]}"
+        for n in "${names[@]:1}"; do namep+="\\|$n"; done
+        namep+='\)"'
+    fi
     mapfile -t child_ids < <(xwininfo -root $xwiarg |
-        sed -e 's/^[ \t]\+\('"$widp"'\) .*/\1/' -e '/^'"$widp"'$/!d')
+        sed -n 's/^[ \t]\+\(0x[[:xdigit:]]\+\) '"$namep"':.*/\1/p')
 
     local id strut
     for id in "${child_ids[@]}"; do
@@ -51,31 +56,6 @@ find_dock_struts() {
                 _log "\t\tFound strut: ${strut[*]}\n"
                 struts=("${struts[@]}" "${strut[@]}")
             fi
-        fi
-    done
-    _log "...done\n"
-}
-
-# Faster version of 'find_dock_struts' if each dock only has one instance.
-# $1: dock names
-get_dock_struts() {
-    command -v xprop >/dev/null || return 1
-
-    _log "Searching dock struts for ${*}...\n"
-    for d in "${@}"; do
-        if ! xprop -name "$d" >/dev/null 2>&1; then
-            _log "\tCouldn't find window for: '$d'\n"
-            continue
-        fi
-        if xprop -name "$d" _NET_WM_WINDOW_TYPE | grep -wq _NET_WM_WINDOW_TYPE_DOCK; then
-            _log "\tFound dock: $d\n"
-            IFS=", " read -ra strut <<< "$(xprop -name "$d" -notype _NET_WM_STRUT_PARTIAL |
-                   sed -n 's/^_NET_WM_STRUT_PARTIAL = \(.*\)/\1/p')"
-            if [ ${#strut[@]} -ne 0 ]; then
-                _log "\t\tFound strut: ${strut[*]}\n"
-                struts=("${struts[@]}" "${strut[@]}")
-            fi
-
         fi
     done
     _log "...done\n"
@@ -105,16 +85,11 @@ _tostr() {
 }
 
 case "$1" in
-    --no-docks);;
-    --single-dock-instances)
-        shift; get_dock_struts "$@";;
-    --deep-search)
-        find_dock_struts true;;
-    --help)
-        usage; exit 0;;
-    *)
-        find_dock_struts;;
+    --no-docks) no_docks=true;;
+    --no-deep-search) deep_search=false; shift;;
+    --help) usage; exit 0;;
 esac
+[ "$no_docks" = true ] || find_dock_struts "${deep_search:-true}" "$@"
 
 _log "\nGet dimension of displays..."
 mapfile -t dimen < <(xrandr --current |
