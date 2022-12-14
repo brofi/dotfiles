@@ -105,7 +105,6 @@ sheight="${ssize#*x }"
 _log "done\n"
 
 _log "\nAdd exclusions to picom command...\n"
-picomcmd="picom -b "
 for d in "${dimen[@]}"; do
     _log "\tFor display dimension $d:\n"
     res="${d%%+*}"; res=("${res%x*}" "${res#*x}")
@@ -149,13 +148,13 @@ for d in "${dimen[@]}"; do
     _log "\t...done\n"
     _log "\tGathered offsets: ${offs[*]}\n"
     # Window is maxed out horizontally on display
-    c="\"x = $((offs[0]>0?offs[0]:pos[0])) && x2 = $((offs[1]>0?swidth-offs[1]:pos[0]+res[0])) &&"
+    c="x = $((offs[0]>0?offs[0]:pos[0])) && x2 = $((offs[1]>0?swidth-offs[1]:pos[0]+res[0])) &&"
     # Window is maxed out vertically on display
-    c="$c y = $((offs[2]>0?offs[2]:pos[1])) && y2 = $((offs[3]>0?sheight-offs[3]:pos[1]+res[1]))\""
-    picomcmd="$picomcmd --rounded-corners-exclude $c"
+    c+="y = $((offs[2]>0?offs[2]:pos[1])) && y2 = $((offs[3]>0?sheight-offs[3]:pos[1]+res[1]))"
+    picomargs+=(--rounded-corners-exclude "$c")
     _log "\tAdding picom exclusion: $c\n"
 done
 _log "...done\n"
 
-_log "Starting picom with:\n$picomcmd"
-eval "$picomcmd" >/dev/null 2>&1 || exit 1
+_log "Starting picom with:\n${picomargs[*]}\n"
+picom "${picomargs[@]}" >/dev/null 2>&1

@@ -66,9 +66,10 @@ function set_bg {
 
 # Restart picom wrapper if it was running.
 function restart_picomr {
-    if pgrep -f "picom.*--rounded-corners.*" >/dev/null; then
-        pkill picom && picomr
-    fi
+    IFS=" " read -ra p <<< "$(pgrep -xa picomr)"
+    [ "${#p[@]}" -gt 2 ] &&
+        kill -- -"${p[0]}" &&
+        setsid "${p[@]:2}" &>/dev/null &
 }
 
 # Print all connected outputs with their monitor's name.
@@ -459,7 +460,7 @@ while [ $# -gt 0 ]; do
             else
                 if eval "$xrandr_cmd"; then
                     set_bg
-                    restart_picomr
+                    restart_picomr &>/dev/null
                 fi
             fi
             unset cmd; break;;
