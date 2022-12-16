@@ -38,6 +38,7 @@ import XMonad.Hooks.StatusBar (StatusBarConfig,statusBarProp,dynamicEasySBs
 import XMonad.Hooks.StatusBar.PP (PP,ppCurrent,ppVisible,ppHidden
     ,ppHiddenNoWindows,ppUrgent,ppSep,ppWsSep,ppTitle,ppLayout,ppOrder,ppSort
     ,ppExtras,xmobarColor,dzenColor,shorten,pad,wrap)
+import XMonad.Layout.BoringWindows (boringWindows,focusDown,focusUp)
 import XMonad.Layout.Grid (Grid(Grid))
 import XMonad.Layout.LayoutCombinators ((|||))
 import XMonad.Layout.Maximize (maximize,maximizeRestore)
@@ -50,7 +51,7 @@ import XMonad.Layout.Reflect (REFLECTX(REFLECTX),REFLECTY(REFLECTY))
 import XMonad.Layout.Renamed (renamed,Rename(CutWordsLeft,Replace))
 import XMonad.Layout.Spacing (spacingRaw,Border(Border))
 import qualified XMonad.StackSet as W -- window key bindings (e.g. additional workspace)
-    (greedyView,shift,focusUp,focusDown)
+    (greedyView,shift)
 import XMonad.Prompt (XPrompt(showXPrompt),XPConfig(..),XPPosition(Bottom)
     ,mkXPrompt,mkComplFunFromList,defaultXPKeymap)
 import XMonad.Prompt.FuzzyMatch (fuzzyMatch,fuzzySort)
@@ -126,6 +127,8 @@ layout to mostly fill the screen\" with @xK_backslash@ (see 'keys'').
 removing them from the layout until they are restored\" with @xK_m@ and
 shift + @xK_m@, respectively (see 'keys'').
 
+* 'boringWindows' to be able to skip over minimized windows.
+
 * Ability to \"reflect a layout horizontally or vertically\" and
 to toggle those reflections ("XMonad.Layout.Reflect" and "XMonad.Layout.MultiToggle").
 Key bindings @xK_x@ and @xK_y@ in 'keys''.
@@ -160,6 +163,9 @@ layout' =
 
     -- Allow windows to be yanked out of layout
     . maximize
+
+    -- Allow windows to be marked as boring
+    . boringWindows
 
     -- Adds possibility to reflect layout horizontally and vertically
     . mkToggle (single REFLECTX)
@@ -462,9 +468,11 @@ keys' = [-- launch dmenu
           -- additional key binding 0 -> /dev/null
           , ((modMask', xK_0), windows $ W.greedyView "/dev/null")
           , ((modMask' .|. shiftMask, xK_0), windows $ W.shift "/dev/null")
-          -- re-enable Alt+Tab
-          , ((mod1Mask, xK_Tab), windows W.focusDown)
-          , ((mod1Mask .|. shiftMask, xK_Tab), windows W.focusUp)
+          -- move focus with BoringWindows
+          , ((modMask', xK_j), focusDown)
+          , ((modMask', xK_k), focusUp)
+          , ((mod1Mask, xK_Tab), focusDown)
+          , ((mod1Mask .|. shiftMask, xK_Tab), focusUp)
           -- media keys
           , ((0, xF86XK_MyComputer), spawn terminal')
           , ((0, xF86XK_Explorer), spawn terminal')
