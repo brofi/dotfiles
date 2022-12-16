@@ -10,9 +10,8 @@ __debug=false
 __debug_num_monitors=3
 
 # Get connected outputs from xrandr.
-_IFS=$IFS; IFS=$'\n'
-connected=($(xrandr --current | sed -n 's/\(.*\)[[:space:]]connected.*/\1/p'))
-IFS=$_IFS
+mapfile -t connected < <(xrandr --current |
+    sed -n 's/\(.*\)[[:space:]]connected.*/\1/p')
 
 [ $__debug = true ] && connected=("${connected[@]:0:$__debug_num_monitors}")
 
@@ -61,7 +60,7 @@ OPTIONS:
 # Readjusts background set with 'feh'.
 function set_bg {
     command -v 'feh' > /dev/null 2>&1 || return 1
-    [ -x ~/.fehbg ] && . ~/.fehbg
+    [ -x ~/.fehbg ] && ~/.fehbg 2>/dev/null
 }
 
 # Restart picom wrapper if it was running.
