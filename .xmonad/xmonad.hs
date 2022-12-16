@@ -28,7 +28,7 @@ import System.Process (readProcess)
 
 import XMonad hiding ((|||))
 import XMonad.Actions.Minimize (minimizeWindow,withLastMinimized
-    ,maximizeWindowAndFocus)
+    ,maximizeWindow,maximizeWindowAndFocus)
 import XMonad.Actions.PhysicalScreens(viewScreen,sendToScreen
     ,horizontalScreenOrderer)
 import XMonad.Hooks.EwmhDesktops (ewmh,ewmhFullscreen)
@@ -51,12 +51,12 @@ import XMonad.Layout.Reflect (REFLECTX(REFLECTX),REFLECTY(REFLECTY))
 import XMonad.Layout.Renamed (renamed,Rename(CutWordsLeft,Replace))
 import XMonad.Layout.Spacing (spacingRaw,Border(Border))
 import qualified XMonad.StackSet as W -- window key bindings (e.g. additional workspace)
-    (greedyView,shift)
+    (greedyView,shift,focusWindow)
 import XMonad.Prompt (XPrompt(showXPrompt),XPConfig(..),XPPosition(Bottom)
     ,mkXPrompt,mkComplFunFromList,defaultXPKeymap)
 import XMonad.Prompt.FuzzyMatch (fuzzyMatch,fuzzySort)
 import XMonad.Prompt.Shell (shellPrompt)
-import XMonad.Prompt.Window (windowPrompt,WindowPrompt(Goto),allWindows)
+import XMonad.Prompt.Window (windowPrompt,WindowPrompt(WithWindow),allWindows)
 import XMonad.Util.WorkspaceCompare (getSortByIndex) -- ppSort
 
 -- Experimental
@@ -455,14 +455,18 @@ dzenCmd (S id) = "xprop -root -notype -spy " ++ xmonadDefProp
 rebinds :: [((KeyMask, KeySym), (KeyMask, KeySym))]
 rebinds = [ ((modMask' .|. shiftMask, xK_space), (modMask' .|. controlMask, xK_space)) ]
 
+-- | Maximize and focus ('maximizeWindowAndFocus' doesn't focus if maximized).
+maximizeGoto :: Window -> X()
+maximizeGoto w = maximizeWindow w >> (windows . W.focusWindow) w
+
 -- | List of additional key bindings.
 keys' :: [((KeyMask, KeySym), X ())]
 keys' = [-- launch dmenu
             ((modMask', xK_p), spawn dmenu)
           -- dmenu-like xmonad prompt
           , ((modMask', xK_o), shellPrompt promptConfigFuzzy)
-          -- goto window prompt
-          , ((modMask', xK_i), windowPrompt promptConfigFuzzy Goto allWindows)
+          -- custom goto window prompt
+          , ((modMask', xK_i), windowPrompt promptConfigFuzzy (WithWindow "Go to: " maximizeGoto) allWindows)
           -- print screen
           , ((0, xK_Print), spawn "scrot")
           -- additional key binding 0 -> /dev/null
