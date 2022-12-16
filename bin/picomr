@@ -55,7 +55,7 @@ find_dock_struts() {
         # Get child IDs for given dock names
         mapfile -t child_ids < <(xwininfo -root $xwiarg 2>/dev/null |
             sed -n 's/^[ \t]\+\(0x[[:xdigit:]]\+\) '"$namep"':.*/\1/p')
-        [ $(($(now)-s)) -ge 1000 ] && _log "failed\n" && return 1
+        [ $(($(now)-s)) -ge 1000 ] && { _log "failed\n"; return 1; }
     done
     _log "done ($(($(now)-s))ms)\n"
 
@@ -68,7 +68,7 @@ find_dock_struts() {
         # meantime.
         _log "\tWaiting for child $id..."
         s=$(now); until xprop -id "$id" "${props[@]}" &>/dev/null; do
-            [ $(($(now)-s)) -ge 500 ] && _log "failed\n" && continue 2
+            [ $(($(now)-s)) -ge 500 ] && { _log "failed\n"; continue 2; }
         done
         _log "done ($(($(now)-s))ms)\n"
         # Get type and strut property of child
