@@ -21,6 +21,9 @@ OPTIONS:
 _debug=false
 struts=()
 
+now() { date +%s%3N; }
+_log() { [ $_debug = true ] && echo -ne "$1"; }
+
 # Find all child windows of root with _NET_WM_WINDOW_TYPE =
 # _NET_WM_WINDOW_TYPE_DOCK and collect their _NET_WM_STRUT_PARTIAL. Supplying
 # the names of each dock vastly improves performance, since it results in way
@@ -35,38 +38,56 @@ find_dock_struts() {
     [ "${1:-true}" = false ] && xwiarg='-children'
     local names=("${@:2}")
 
-    _log "Searching for ${names[*]:-dock} struts in 'xwininfo -root $xwiarg'...\n"
-
     namep='.*'
     if [ "${#names[@]}" -ge 1 ]; then
         namep='"\('"${names[0]}"
         for n in "${names[@]:1}"; do namep+="\\|$n"; done
         namep+='\)"'
     fi
-    mapfile -t child_ids < <(xwininfo -root $xwiarg |
-        sed -n 's/^[ \t]\+\(0x[[:xdigit:]]\+\) '"$namep"':.*/\1/p')
 
-    local id strut
+    _log "Getting child windows with 'xwininfo -root $xwiarg'..."
+    local child_ids s
+    # If e.g. preceeded by fast consecutive changes in the output configuration
+    # (e.g. through xrandr), xwininfo needs some time before it can report a
+    # valid window tree without running into X Errors like 'Bad Window' and 'Bad
+    # Drawable'.
+    s=$(now); until [ ${#child_ids[@]} -gt 0 ]; do
+        # Get child IDs for given dock names
+        mapfile -t child_ids < <(xwininfo -root $xwiarg 2>/dev/null |
+            sed -n 's/^[ \t]\+\(0x[[:xdigit:]]\+\) '"$namep"':.*/\1/p')
+        [ $(($(now)-s)) -ge 1000 ] && _log "failed\n" && return 1
+    done
+    _log "done ($(($(now)-s))ms)\n"
+
+    _log "Looking for ${names[*]:-dock} struts in child windows...\n"
+    local id strut props=(_NET_WM_WINDOW_TYPE _NET_WM_STRUT_PARTIAL)
     for id in "${child_ids[@]}"; do
-        if xprop -id "$id" _NET_WM_WINDOW_TYPE 2>/dev/null |
-            grep -wq _NET_WM_WINDOW_TYPE_DOCK; then
-
-            _log "\tFound dock: $id\n"
-            IFS=", " read -ra strut <<< "$(xprop -id "$id" -notype _NET_WM_STRUT_PARTIAL |
-                sed -n 's/^_NET_WM_STRUT_PARTIAL = \(.*\)/\1/p')"
-            if [ ${#strut[@]} -ne 0 ]; then
+        # Even with a valid window tree from xwininfo xprop might fail with
+        # error BadWindow, so give child windows some time if needed. After the
+        # timeout the window is ignored since it might've been closed in the
+        # meantime.
+        _log "\tWaiting for child $id..."
+        s=$(now); until xprop -id "$id" "${props[@]}" &>/dev/null; do
+            [ $(($(now)-s)) -ge 500 ] && _log "failed\n" && continue 2
+        done
+        _log "done ($(($(now)-s))ms)\n"
+        # Get type and strut property of child
+        mapfile -t values < <(xprop -id "$id" -notype "${props[@]}" 2> /dev/null |
+            sed -e "s/^${props[0]} = \(.*\)/\1/" -e "s/^${props[1]} = \(.*\)/\1/")
+        # If it's of type dock...
+        if [ ${#values[@]} -ge 2 ] &&
+            [ "${values[0]}" = _NET_WM_WINDOW_TYPE_DOCK ]; then
+            _log "\t\tFound dock: $id\n"
+            # ...get its strut
+            IFS=", " read -ra strut <<< "${values[1]}"
+            if [ ${#strut[@]} -eq 12 ]; then
                 _log "\t\tFound strut: ${strut[*]}\n"
-                struts=("${struts[@]}" "${strut[@]}")
+                struts+=("${strut[@]}")
             fi
         fi
     done
     _log "...done\n"
-}
-
-_log() {
-    if [ $_debug = true ]; then
-        echo -ne "$1"
-    fi
+    return 0
 }
 
 _tostr() {
@@ -91,7 +112,10 @@ case "$1" in
     --no-deep-search) deep_search=false; shift;;
     --help) usage; exit 0;;
 esac
-[ "$no_docks" = true ] || find_dock_struts "${deep_search:-true}" "$@"
+
+[ "$no_docks" = true ] ||
+    find_dock_struts "${deep_search:-true}" "$@" ||
+    { echo 'Error: Failed to get dock struts' 1>&2; exit 1; }
 
 _log "\nGet dimension of displays..."
 mapfile -t dimen < <(xrandr --current |
