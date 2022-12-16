@@ -67,7 +67,7 @@ function set_bg {
 function restart_picomr {
     IFS=" " read -ra p <<< "$(pgrep -xa picomr)"
     [ "${#p[@]}" -gt 2 ] &&
-        kill -- -"${p[0]}" &&
+        pkill picom &&
         setsid "${p[@]:2}" &>/dev/null &
 }
 
