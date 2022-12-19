@@ -118,26 +118,54 @@ function get_output_name {
     printf '%s (%s)\n' "$(get_monitor_name "$1")" "$1"
 }
 
-# Gets resolutions for given outputs.
-function get_resolutions {
+# Get mode XIDs available for all given outputs
+function get_common_mode_ids {
+    get_mode_ids "$@" |
+        sort |
+        uniq -cd |
+        sed -n 's/^.*'"$#"'[[:space:]]\(.*\)/\1/p'
+}
+
+# Get mode XIDs for given outputs
+function get_mode_ids {
     for o in "$@"; do
-        xrandr --current -q | sed -n '
-            /^'"$o"'/,/.*\(dis\)\?connected/ {
-                /^'"$o"'/n
-                /.*\(dis\)\?connected/ !{
-                    s/^[[:blank:]]*\([0-9]\+x[0-9]\+\).*/\1/p
-                }
-            }'
+        xrandr --verbose --current |
+            sed -n '/^'"$o"'/,/\(dis\)\?connected/ {
+                s/^  .* (\(0x[[:xdigit:]]\+\)) .*/\1/p
+            }' | sort -u
     done
 }
 
-# Gets common resolution for given outputs.
-function get_common_resolution {
-    get_resolutions "$@" |
-        sort -nr |
-        uniq -cd |
-        sort -nu |
-        sed -n 's/^.*'"$#"'[[:space:]]\(.*\)/\1/p'
+# Get XID of mode with highest resolution and highest pixel clock available for
+# all given outputs
+function get_best_common_mode_id {
+    # XID, pixel clock, number of pixels
+    local max_mode=(0x00 0 0)
+    local common_mode_ids
+    mapfile -t common_mode_ids < <(get_common_mode_ids "$@")
+    local mode nump
+    for xid in "${common_mode_ids[@]}"; do
+        mapfile -t mode < <(get_mode "$xid")
+        nump=$((mode[1]*mode[2]))
+        if [ "$nump" -gt "${max_mode[2]}" ] ||
+            [ "$nump" -eq "${max_mode[2]}" ] &&
+            [ "$(bc -l <<< "${mode[0]}>${max_mode[1]}")" -eq 1 ]; then
+            max_mode=("$xid" "${mode[0]}" "$nump")
+        fi
+    done
+    printf '%s' "${max_mode[0]}"
+}
+
+# Get mode in format:
+# pixel clock
+# width
+# height
+# $1: mode XID
+function get_mode {
+    xrandr --verbose --current | grep -m1 -A2 "  .* ($1)" | sed \
+        -e 's/^  .* ('"$1"') \+\([0-9]\+\.[0-9]\+\)MHz.*/\1/' \
+        -e 's/^ \+h: width \+\([0-9]\+\).*/\1/' \
+        -e 's/^ \+v: height \+\([0-9]\+\).*/\1/'
 }
 
 # Returns xrandr --mode and --rate if a higher refresh rate than the preferred
@@ -373,11 +401,11 @@ function clone {
     fi
 
     # Make xrandr command.
-    local res
-    res=$(get_common_resolution "${outputs[@]}")
-    local cmd="xrandr --output ${outputs[0]} --mode $res"
+    local xid
+    xid=$(get_best_common_mode_id "${outputs[@]}")
+    local cmd="xrandr --output ${outputs[0]} --mode $xid"
     for o in "${outputs[@]:1}"; do
-        cmd="$cmd --output $o --same-as ${outputs[0]} --mode $res"
+        cmd="$cmd --output $o --same-as ${outputs[0]} --mode $xid"
     done
     for c in "${connected[@]}"; do
         if ! array_elem "$c" "${outputs[@]}"; then
