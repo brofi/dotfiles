@@ -483,6 +483,7 @@ keys' = [-- launch dmenu
           , ((0, xF86XK_AudioLowerVolume), spawn "amixer set Master 2dB-")
           , ((0, xF86XK_AudioRaiseVolume), spawn "amixer set Master 2dB+")
           , ((0, xF86XK_AudioMute), spawn "amixer set Master toggle")
+          , ((modMask', xF86XK_AudioMute), spawn "cycle_analog_out")
           , ((0, xF86XK_Calculator), spawn $ terminal' ++ " -e bc -q")
           , ((0, xF86XK_HomePage), spawn "xdg-open http://google.com")
           , ((0, xF86XK_Mail), spawn "xdg-open http://mailbox.org")

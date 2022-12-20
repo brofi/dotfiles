@@ -1,0 +1,55 @@
+#!/bin/bash
+
+ctrl=(
+    'Analog Output'
+    'Stereo Upmixing'
+    'Headphones Impedance'
+    'Master'
+)
+
+cfg=(
+    'Headphones'
+    'Front'
+    '64-300 ohms'
+    '0%&front 75%'
+
+    'Speakers'
+    'Front+Surround'
+    '< 32 ohms'
+    '0%&frontleft 70%&frontright 75%&rearleft 65%&rearright 80%&center 75%&woofer 50%'
+
+    'FP Headphones'
+    'Front'
+    '32-64 ohms'
+    '0%&front 80%'
+)
+
+ncfg=${#cfg[@]}
+nctrl=${#ctrl[@]}
+
+[ "$((ncfg % nctrl))" -eq 0 ] || exit 1
+
+curr_output() {
+    amixer sget "${ctrl[0]}" |
+        sed -n "s/ \+Item0: '\(.*\)'/\1/p"
+}
+
+next_output_cfg() {
+    local o i=0
+    o=$(curr_output)
+    while [ "$i" -lt "$((ncfg / nctrl))" ]; do
+        if [ "${cfg[$((i * nctrl))]}" = "$o" ]; then
+            printf '%i' $(((i+1) * nctrl % ncfg))
+            return 0
+        fi
+        ((i++))
+    done
+    return 1
+}
+
+ci=$(next_output_cfg) || exit 1
+printf '%s\n' "${cfg[$ci]}"
+for i in "${!ctrl[@]}"; do
+    IFS='&' read -ra params <<< "${cfg[$((ci+i))]}"
+    amixer -q -M sset "${ctrl[$i]}" "${params[@]}"
+done
