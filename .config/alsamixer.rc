@@ -1,0 +1,34 @@
+### Key bindings
+
+# Add Q to close...
+bind q mixer close
+bind Q mixer close
+# ...therefore moving Q and E down to A and D
+bind a mixer control_up_left
+bind A mixer control_up_left
+bind d mixer control_up_right
+bind D mixer control_up_right
+
+### Color configuration
+
+color mixer_frame green default
+color mixer_text default default
+color mixer_active green default bold
+color ctl_frame default default
+color ctl_mute red default
+color ctl_nomute default default
+color ctl_capture default default bold
+color ctl_nocapture default default bold
+color ctl_label default default bold
+color ctl_label_focus yellow default bold
+color ctl_mark_focus blue default bold
+color ctl_bar_lo green green
+color ctl_bar_mi green green
+color ctl_bar_hi red red
+color ctl_inactive red red
+color ctl_label_inactive red default bold
+color errormsg red default bold
+color textbox default default
+color textfield default black
+color menu default default
+color menu_selected black green
