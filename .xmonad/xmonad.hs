@@ -203,7 +203,7 @@ tabTheme = def
     , activeTextColor     = blue
     , inactiveTextColor   = fg0
     , urgentTextColor     = red
-    , fontName            = "xft:" ++ xftFont
+    , fontName            = "xft:" ++ fontName' Xft
     , decoWidth           = 200
     , decoHeight          = 20
     }
@@ -268,7 +268,7 @@ iconRoot = ".xmobar/icons"
 dmenu :: String
 dmenu = "dmenu_run -b -nb '" ++ bg ++ "' -nf '" ++ fg0
         ++ "' -sf '" ++ green ++ "' -sb '" ++ bg
-        ++ "' -p '>' -fn '" ++ xftFont ++ "'"
+        ++ "' -p '>' -fn '" ++ fontName' Xft ++ "'"
 
 -- | trayer command line string.
 trayerCmd :: String
@@ -287,16 +287,17 @@ trayerCmd = "trayer"
          ++ " --alpha 0"
          ++ " --tint 0x" ++ tail bg
 
-{- | The X Free Type /Xft/ font name.
-
-An Xft <https://keithp.com/~keithp/render/Xft.tutorial Tutorial>.
+{- | String representation format of font.
+X Free Type <https://keithp.com/~keithp/render/Xft.tutorial Xft>
+<https://docs.gtk.org/Pango/type_func.FontDescription.from_string.html Pango>
 -}
-xftFont :: String
-xftFont = "Inconsolata:size=12:antialias=true"
+data FontFormat = Xft | Pango
 
--- | Bold version of 'xftFont'.
-xftFontBold :: String
-xftFontBold = xftFont ++ ":weight=bold"
+-- | String representation of font in given 'FontFormat'.
+fontName' :: FontFormat -> String
+fontName' = fontFormat "Inconsolata" 12
+    where fontFormat n s Xft = n ++ ":size=" ++ show s ++ ":antialias=true"
+          fontFormat n s Pango = n ++ " " ++ show s
 
 -- | Default pretty printing options.
 defaultPP' :: (String -> String -> String -> String) -- ^ color format function
@@ -410,8 +411,7 @@ xmobarCmd (S id) = ("xmobar ~/.xmobar/xmobarrc " ++) <$> flags
     templR = intercalate xmobarTemplateSep . map (pad' sep) <$> xmobarTemplate
     flags  = (\tr ->
                "-x " ++ show id
-               -- TODO use pango syntax once xmobar 0.45 is released
-               ++ " -f 'xft:" ++ xftFont
+               ++ " -f '" ++ fontName' Pango
                ++ "' -B '" ++ bg
                ++ "' -F '" ++ fg0
                ++ "' -a '" ++ asep
@@ -443,7 +443,7 @@ dzenCmd (S id) = "xprop -root -notype -spy " ++ xmonadDefProp
              , ("button5", [("unhide", [])]) ]
     flags  = "-p"
             ++ " -xs " ++ show id
-            ++ " -fn '" ++ xftFont
+            ++ " -fn '" ++ fontName' Xft
             ++ "' -bg '" ++ bg
             ++ "' -fg '" ++ fg0
             ++ "' -h '"  ++ show height
@@ -551,7 +551,7 @@ ynPrompt' = flip ynPrompt True
 -- | Base 'XMonad.Prompt' config.
 promptConfig:: XPConfig
 promptConfig = def
-    { font = "xft:" ++ xftFont
+    { font = "xft:" ++ fontName' Xft
     , bgColor = bg
     , fgColor = fg0
     , bgHLight = bg
