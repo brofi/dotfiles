@@ -16,9 +16,10 @@ module Main where
 
 import Colors as C
 
+import Control.Exception (IOException,try)
 import Control.Monad (when)
 import Data.Char (toLower)
-import Data.List (intercalate)
+import Data.List (intercalate,isInfixOf)
 import qualified Data.Map as M
 import Graphics.X11.ExtraTypes.XF86 -- to use xF86XK_* in key bindings
 import System.Directory (createDirectoryIfMissing)
@@ -57,6 +58,7 @@ import XMonad.Prompt (XPrompt(showXPrompt),XPConfig(..),XPPosition(Bottom)
 import XMonad.Prompt.FuzzyMatch (fuzzyMatch,fuzzySort)
 import XMonad.Prompt.Shell (shellPrompt)
 import XMonad.Prompt.Window (windowPrompt,WindowPrompt(WithWindow),allWindows)
+import XMonad.Util.Run (runProcessWithInput)
 import XMonad.Util.WorkspaceCompare (getSortByIndex) -- ppSort
 
 -- Experimental
@@ -409,9 +411,10 @@ xmobarCmd (S id) = ("xmobar ~/.xmobar/xmobarrc " ++) <$> flags
     sep    = "%"
     templL = pad' sep "XMonadLog"
     templR = intercalate xmobarTemplateSep . map (pad' sep) <$> xmobarTemplate
-    flags  = (\tr ->
+    flags  = (\tr dpi ->
                "-x " ++ show id
                ++ " -f '" ++ fontName' Pango
+               ++ "' -D '" ++ dpi
                ++ "' -B '" ++ bg
                ++ "' -F '" ++ fg0
                ++ "' -a '" ++ asep
@@ -420,7 +423,7 @@ xmobarCmd (S id) = ("xmobar ~/.xmobar/xmobarrc " ++) <$> flags
                ++ "' -t '" ++ templL ++ asep ++ tr ++ " "
                ++ "' -c '" ++ listString ("Run XMonadLog" : xmobarCommands)
                ++ "' -d" -- same as overrideRedirect = False
-               ) <$> templR
+               ) <$> templR <*> dpi
 
 -- | Used to create dzen status bars depending on the 'ScreenId'.
 dzen' :: ScreenId -> IO StatusBarConfig
@@ -729,6 +732,14 @@ rewrite (o,n) m = rewrite' (M.lookup o m) (M.lookup n m)
 isLaptop :: IO Bool
 isLaptop = (`elem` ["8", "9", "10", "14"]) . head . lines
     <$> readFile "/sys/class/dmi/id/chassis_type"
+
+-- | Screen DPI (default: 96).
+dpi :: IO String
+dpi = do
+    stdout <- try $ runProcessWithInput "xdpyinfo" [] [] :: IO (Either IOException String)
+    return $ case stdout of
+        Left _ -> "96"
+        Right x -> (takeWhile (/= 'x') . (!! 1) . words . head . filter (isInfixOf "resolution") . lines) x
 
 {- | Run haddock on xmonad.hs and the output in a \"doc\" folder next to it.
 
