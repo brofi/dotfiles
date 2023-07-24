@@ -3,5 +3,5 @@ Encoding=UTF-8
 Type=Application
 NoDisplay=true
 Name=vim
-Exec=/usr/bin/urxvt -e /usr/bin/vim
+Exec=/usr/bin/alacritty -e /usr/bin/vim
 MimeType=text/plain

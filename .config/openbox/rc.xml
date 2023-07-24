@@ -309,17 +309,17 @@
         <!-- Keybindings for running applications -->
         <keybind key="W-S-Return">
             <action name="Execute">
-                <command>urxvt</command>
+                <command>alacritty</command>
             </action>
         </keybind>
         <keybind key="XF86MyComputer">
             <action name="Execute">
-                <command>urxvt</command>
+                <command>alacritty</command>
             </action>
         </keybind>
         <keybind key="XF86Explorer">
             <action name="Execute">
-                <command>urxvt</command>
+                <command>alacritty</command>
             </action>
         </keybind>
         <keybind key="XF86AudioLowerVolume">
@@ -339,7 +339,7 @@
         </keybind>
         <keybind key="XF86Calculator">
             <action name="Execute">
-                <command>urxvt -e bc -q</command>
+                <command>alacritty -e bc -q</command>
             </action>
         </keybind>
         <keybind key="XF86HomePage">

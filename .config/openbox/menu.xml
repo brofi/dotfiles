@@ -30,6 +30,11 @@
     </menu>
 
     <menu id="apps-term-menu" label="Terminals">
+        <item label="Alacritty">
+            <action name="Execute">
+                <command>alacritty</command>
+            </action>
+        </item>
         <item label="Urxvt">
             <action name="Execute">
                 <command>urxvt</command>

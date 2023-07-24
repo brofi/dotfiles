@@ -72,7 +72,7 @@ workspaces' = map show [1..9] ++ ["/dev/null"]
 
 -- | Default terminal.
 terminal' :: String
-terminal' = "urxvt"
+terminal' = "alacritty"
 
 -- | Xmonad border width.
 borderWidth' :: Dimension
