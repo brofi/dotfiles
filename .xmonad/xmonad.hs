@@ -513,7 +513,7 @@ keys' = [-- launch dmenu
           -- , ((modMask', xK_q), io $ runHaddock >> rr)
           , ((modMask', xK_q), rr)
           -- lock screen
-          , ((modMask' .|. shiftMask, xK_l), spawn "physlock -ms -p $(whoami)@$(hostname)")
+          , ((modMask' .|. shiftMask, xK_l), spawn "physlock -ms -p $(whoami)@$(uname -n)")
           -- ask before exiting
           , ((modMask' .|. shiftMask, xK_q), ynPrompt' promptConfig "Quit?" $ io exitSuccess)
         ]

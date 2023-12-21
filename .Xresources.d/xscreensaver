@@ -2,7 +2,7 @@
 
 ! General
 XScreenSaver*mode: one
-XScreenSaver*selected: 206
+XScreenSaver*selected: 205
 XScreenSaver*timeout: 0:15:00
 XScreenSaver*lockTimeout: 0:00:05
 XScreenSaver*passwdTimeout: 0:00:10
