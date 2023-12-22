@@ -1,4 +1,5 @@
-Xcursor.theme: Simple-and-Soft
+Xcursor.theme: Adwaita-custom
+Xcursor.size: 24
 #include ".colors/gruvbox-dark"
 
 #include ".Xresources.d/urxvt"
