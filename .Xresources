@@ -1,4 +1,4 @@
-Xcursor.theme: Adwaita-custom
+Xcursor.theme: Adwaita-custom-dark
 Xcursor.size: 24
 #include ".colors/gruvbox-dark"
 

@@ -16,4 +16,9 @@ for s in "$conf"/gtk-{3.0,4.0}/settings.ini; do
     sed -i --follow-symlinks "/gtk-icon-theme-name/s/=.*/=${settings[1]}/" "$s"
     sed -i --follow-symlinks "/gtk-cursor-theme-name/s/=.*/=${settings[3]}/" "$s"
 done
+
+sed -i --follow-symlinks "/Xcursor.theme/s/:.*/: ${settings[3]}/" ~/.Xresources
+xrdb ~/.Xresources
+sed -i --follow-symlinks "/Inherits/s/=.*/=${settings[3]}/" \
+    ~/.icons/default/index.theme
 papirus-folders -o -t "${settings[1]}" -C "${settings[2]}" >/dev/null
