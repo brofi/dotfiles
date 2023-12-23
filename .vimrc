@@ -460,7 +460,7 @@ let g:tex_flavor = 'latex'
 
 "Set a separate build directory for latexmk.
 let g:vimtex_compiler_latexmk = {
-    \ 'build_dir': './build',
+    \ 'out_dir': './build',
 \}
 
 "Disable overfull/underfull \hbox and all package warnings.
