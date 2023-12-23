@@ -463,15 +463,6 @@ let g:vimtex_compiler_latexmk = {
     \ 'out_dir': './build',
 \}
 
-"Disable overfull/underfull \hbox and all package warnings.
-let g:vimtex_quickfix_ignore_filters = {
-    \ 'overfull' : 0,
-    \ 'underfull' : 0,
-    \ 'packages' : {
-    \   'default' : 0,
-    \ },
-\}
-
 "}}}
 
 "Gruvbox {{{
