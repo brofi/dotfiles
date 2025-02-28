@@ -396,8 +396,8 @@ xmobarTemplateSep :: String
 xmobarTemplateSep = " "
 
 -- | Used to create xmobars depending on the 'ScreenId'.
-xmobar' :: ScreenId -> IO StatusBarConfig
-xmobar' id = flip statusBarProp (pure xmobarPP') <$> xmobarCmd id
+xmobar' :: ScreenId -> X StatusBarConfig
+xmobar' id = io $ flip statusBarProp (pure xmobarPP') <$> xmobarCmd id
 
 -- | Custom pretty printing options for xmobar.
 xmobarPP' :: PP
@@ -426,7 +426,7 @@ xmobarCmd (S id) = ("xmobar ~/.xmobar/xmobarrc " ++) <$> flags
                ) <$> templR <*> dpi
 
 -- | Used to create dzen status bars depending on the 'ScreenId'.
-dzen' :: ScreenId -> IO StatusBarConfig
+dzen' :: ScreenId -> X StatusBarConfig
 dzen' id = pure $ statusBarProp (dzenCmd id) (pure dzenPP')
 
 -- | Custom pretty printing options for dzen.
@@ -434,7 +434,7 @@ dzenPP' :: PP
 dzenPP' = defaultPP' dzenColor dzenIcon
 
 -- | Dzen command line string for given 'ScreenId'.
-dzenCmd :: ScreenId-> String
+dzenCmd :: ScreenId -> String
 dzenCmd (S id) = "xprop -root -notype -spy " ++ xmonadDefProp
               -- get value from: PROP_NAME = "value"
               ++ " | sed -u 's/" ++ xmonadDefProp ++ " = \"\\(.*\\)\"/\\1/'"
